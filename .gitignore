@@ -1,0 +1,46 @@
+# Unreal Engine generated directories
+Binaries/
+Build/
+Intermediate/
+Saved/
+DerivedDataCache/
+
+.claude/
+.idea/
+
+doc/Plans
+
+*.aux
+*.log
+*.out
+*.gz
+*.toc
+
+
+# Plugin generated directories (keep source, ignore build output)
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+
+# Visual Studio generated project files (regenerated via right-click > Generate VS Project Files)
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Visual Studio cache/options
+.vs/
+*.suo
+*.user
+*.VC.db
+*.VC.opendb
+
+# Unreal Engine user-specific config (machine-local settings)
+Config/DefaultEditorPerProjectUserSettings.ini
+
+# Windows thumbnails
+Thumbs.db
+Desktop.ini
+
+# macOS metadata
+.DS_Store
+*.xcworkspace
