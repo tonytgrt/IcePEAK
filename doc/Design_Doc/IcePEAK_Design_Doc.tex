@@ -3,6 +3,8 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.5em}
@@ -305,44 +307,176 @@ On pause, all physics and timers freeze. On resume, they continue from the saved
 \subsection{Design Assumptions}
 
 \subsubsection{Hardware}
-% Minimum hardware configuration (i.e.\ processor speed, memory requirement,
-% graphics card, etc.) necessary to run game.
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Headset:} Meta Quest~3 (standalone mode). The Snapdragon XR2 Gen~2 processor, 8\,GB RAM, and Adreno 740 GPU are the target hardware baseline.
+    \item \textbf{Controllers:} Quest~3 Touch Plus controllers (two, one per hand). 6DoF tracking is required for swing detection and spatial positioning.
+    \item \textbf{Play space:} Standing or room-scale VR. A minimum 2\,m $\times$ 2\,m play area is recommended so the player can extend both arms overhead and to the sides while climbing.
+\end{itemize}
 
 \subsubsection{Software}
-% Version of Game Engine, Windows, DirectX, etc.\ required to run game.
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Game engine:} Unity 2022 LTS (or newer 2022.3.x patch).
+    \item \textbf{XR framework:} Meta XR SDK (formerly Oculus Integration) for Quest~3 input, hand tracking fallback, and performance profiling.
+    \item \textbf{Rendering:} Universal Render Pipeline (URP) configured for mobile VR (single-pass instanced rendering, foveated rendering enabled).
+    \item \textbf{Target platform:} Android (Quest~3 standalone APK). No PC tethering required.
+    \item \textbf{Minimum OS:} Quest system software v62 or later.
+\end{itemize}
 
 \subsubsection{Algorithms and Techniques}
-% What specific algorithms, plug-ins, animation techniques, etc.\ will you
-% be using to implement your game? Be specific.
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Ice pick collision detection.} Unity Rigidbody physics with trigger colliders on the ice pick tips. On collision, the script reads the controller velocity from \texttt{OVRInput} (or the XR Interaction Toolkit velocity provider). If the velocity magnitude exceeds a tunable threshold and the surface tag is \texttt{Ice}, the pick embeds; if the tag is \texttt{Rock}, the pick bounces off with a spark particle effect.
+
+    \item \textbf{Ice destruction system.} Each ice surface is a prefab with an intact mesh and a pre-fractured variant (created with a mesh-fracture tool such as RayFire or a custom Voronoi shattering script). When a pick embeds, a coroutine starts a timer (default 2\,s). At expiry the intact mesh is swapped for the fractured pieces, which are given small outward Rigidbody forces and destroyed after a short lifetime to reclaim memory.
+
+    \item \textbf{Cold spray extension.} Applying cold spray to a surface multiplies the crack timer (e.g.\ $2\text{s} \rightarrow 6\text{s}$). Implemented by overriding the timer duration on that specific ice prefab instance and playing a frost particle effect.
+
+    \item \textbf{Grappling hook.} On trigger press a raycast is fired from the hook prop in the direction the player is aiming. If it hits a valid surface within range, a line renderer draws the rope and the player's position is lerped toward the hit point over $\sim$0.5\,s. At arrival the hook is consumed.
+
+    \item \textbf{Pole placement.} When the player holds a pole against a rock surface and presses trigger, a raycast confirms the surface tag is \texttt{Rock}. The pole prefab is instantiated at the hit point with a fixed joint to the rock. The pole's tip has an \texttt{Ice}-tagged collider so that ice picks can embed in it.
+
+    \item \textbf{Player body / inverse kinematics.} A simple upper-body IK rig (Final IK plugin or Unity's built-in Animation Rigging package) maps headset and controller transforms to a visible torso, arms, and hands. This provides the harness and gear visibility without full-body tracking.
+
+    \item \textbf{Climbing locomotion.} When a pick is embedded and the player pulls the controller downward, the player's camera rig moves upward by the inverse of the controller displacement. This is handled per-frame by reading the delta of the gripping controller's position and applying the negated vector to the XR Origin transform.
+
+    \item \textbf{Environmental hazards.}
+    \begin{itemize}
+        \item \emph{Falling rocks:} Spawned by trigger zones or timers. Each rock is a Rigidbody with a collider that follows a semi-random downward path. A shadow projector and audio source are attached and activated 1--2\,s before the rock enters the player's zone.
+        \item \emph{Ice storms:} A full-screen particle system and post-processing fog increase. A global wind vector is applied as a small force to the camera rig, simulating buffeting.
+    \end{itemize}
+
+    \item \textbf{Checkpoint system.} Each rock platform has a trigger collider. When the player's feet (or camera rig Y-position) enters the trigger, the platform is recorded as the current checkpoint and the highest-altitude value is updated if applicable.
+
+    \item \textbf{Performance optimization.} Level-of-detail (LOD) groups on distant mountain geometry, shader-based fog to limit draw distance, dynamic batching of ice fragment meshes, and object pooling for rock hazards and particle effects to maintain 72\,fps on Quest~3.
+\end{itemize}
 
 % -----------------------------------------------------------------
 \subsection{Storyboards}
-% Show storyboard sketches of your game environment, puzzles and gameplay
-% sequences here. This should convey the look and feel of the game as well
-% as illustrate the basic game play.
+
+% TODO: Insert storyboard sketches here. The following descriptions indicate
+% what each storyboard frame should depict.
+
+\textbf{Frame 1 --- Base Camp.} The player's first-person view from the starting rock platform. Ice picks are visible in both hands. The harness with gadget slots is visible on the chest. A short ice wall leads to the first ledge above.
+
+\textbf{Frame 2 --- First Climb.} The player mid-swing, driving a pick into ice. Crack lines are beginning to spread from a previous hold below. The next rock ledge is two body-lengths above.
+
+\textbf{Frame 3 --- Gadget Use (Cold Spray).} The player holds a cold-spray canister against an ice surface. A frost effect radiates from the spray point. The ice appears thicker and bluer, indicating the extended hold timer.
+
+\textbf{Frame 4 --- Rockfall Hazard.} A shadow falls across the player's hands. Above, a boulder is dislodging from the cliff. The player must decide whether to swing laterally to avoid it or trust the helmet.
+
+\textbf{Frame 5 --- Route Choice (Zone 2).} From a wide rock platform, two paths are visible: a steep direct route with sparse holds on the left, and a longer traverse to the right that passes a glowing supply cache. Both paths converge at a ledge above.
+
+\textbf{Frame 6 --- Summit Push (Zone 3).} Near-vertical ice face, blowing snow particles obscuring the view. The player's hands grip picks embedded in thin, heavily cracked ice. The summit ridge is faintly visible above through the storm.
+
+\textbf{Frame 7 --- Summit.} The player pulls onto the peak. A panoramic mountain vista stretches in every direction. The sky is clear. Altitude markings on a cairn confirm the summit has been reached.
 
 % -----------------------------------------------------------------
 \subsection{Design Logic}
 
 \subsubsection{Finite State Machines --- Events/States/Effects}
-% Provide as much detail as possible of your game logic in the form of a
-% FSM graph. You can sketch this by hand or use Visio, whichever is easier.
+
+% TODO: Include FSM diagram. The following describes the states and transitions.
+
+\textbf{Player FSM:}
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Idle (on platform)} --- Player is standing on a rock platform. Can look around, access harness, grab gadgets. \emph{Transition:} pick embeds in surface $\rightarrow$ Climbing.
+    \item \textbf{Climbing} --- One or both picks are embedded. Player is actively ascending. Ice timers are running. \emph{Transitions:} both picks free + on platform $\rightarrow$ Idle; both picks free + not on platform $\rightarrow$ Falling; checkpoint trigger entered $\rightarrow$ Idle (on platform).
+    \item \textbf{Using Gadget} --- Player has activated a gadget (brief state). \emph{Transitions:} grappling hook $\rightarrow$ Zipping; cold spray / pole $\rightarrow$ return to Climbing or Idle.
+    \item \textbf{Zipping} --- Player is being pulled toward grappling hook target. Movement is automated. \emph{Transition:} arrival at target $\rightarrow$ Climbing or Idle (depending on surface type).
+    \item \textbf{Falling} --- Both hands lost support and player is not on a platform. Gravity takes over. \emph{Transition:} after brief fall $\rightarrow$ Respawning.
+    \item \textbf{Respawning} --- Screen fades to black, player is repositioned at last checkpoint. Nearby ice surfaces are reset to intact. \emph{Transition:} fade-in complete $\rightarrow$ Idle (on platform).
+\end{itemize}
+
+\textbf{Ice Surface FSM:}
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Intact} --- Default state. Surface can receive a pick embed. \emph{Transition:} pick embeds $\rightarrow$ Cracking.
+    \item \textbf{Cracking} --- Timer is running ($\sim$2\,s default). Crack lines spread visually; audio escalates. \emph{Transitions:} timer expires $\rightarrow$ Shattered; cold spray applied $\rightarrow$ Cracking (timer extended).
+    \item \textbf{Shattered} --- Surface breaks into fragments that fall away. No longer usable. \emph{Transition:} player respawns at checkpoint $\rightarrow$ Intact (for surfaces near the checkpoint only).
+\end{itemize}
+
+\textbf{Hazard FSM (Falling Rock):}
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Dormant} --- Rock is part of the environment, not yet triggered. \emph{Transition:} player enters trigger zone or timer fires $\rightarrow$ Warning.
+    \item \textbf{Warning} --- Shadow projector activates, rumble audio plays (1--2\,s). \emph{Transition:} warning time elapsed $\rightarrow$ Falling.
+    \item \textbf{Falling} --- Rock Rigidbody is enabled, rock falls under gravity. \emph{Transitions:} hits player $\rightarrow$ Impact (check helmet); exits play area $\rightarrow$ Destroyed.
+    \item \textbf{Impact} --- If helmet equipped: helmet breaks, player stays attached. If no helmet: player enters Falling state (both grips released). Rock is destroyed.
+\end{itemize}
+
+% TODO: Include FSM graph diagrams (hand-drawn or Visio).
 
 \subsubsection{User Solution/Actions}
-% Describe how the player wins the game. Include descriptions of puzzles
-% shown in Section 3.2 that must be solved. Provide as much detail as possible.
+
+The player wins by climbing from base camp to the summit, passing through all three altitude zones. The core loop at every stage is: survey the route from a safe platform, plan the sequence of holds and gadget usage, then execute the climb.
+
+\textbf{Key challenge scenarios and solutions:}
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{Standard ice traverse.} The player swings from hold to hold, staying ahead of the 2-second crack timer. Solution: maintain a steady rhythm of swing--grip--reach--swing, always placing the next pick before the current hold shatters.
+
+    \item \textbf{Long gap between platforms.} A stretch of ice too long to cross before early holds shatter. Solution: use cold spray on one or two critical holds midway through to buy extra time, creating ``rest points'' within the ice.
+
+    \item \textbf{Rock wall barrier.} A section of pure rock with no ice. Ice picks cannot grip. Solution: drive a pole into the rock to create an anchor, then hook the ice pick onto the pole to traverse across.
+
+    \item \textbf{Overhang or distant ledge.} A gap too wide to reach by climbing. Solution: fire the grappling hook at a surface across the gap and zip over.
+
+    \item \textbf{Rockfall gauntlet.} A zone where rocks fall frequently. Solution: equip the helmet for insurance, watch for shadow cues, and time climbing bursts between rockfall waves. Alternatively, find a sheltered route (e.g.\ under an overhang) that avoids the rockfall zone.
+
+    \item \textbf{Ice storm section.} Reduced visibility makes it hard to spot the next hold. Solution: move cautiously, listen for audio cues (crack sounds indicate nearby ice surfaces), and rely on the warm glow of supply caches as waypoints.
+\end{enumerate}
+
+The overall strategy is to conserve gadgets for the harder upper zones while using the lower zones to learn the climbing mechanics and build confidence.
 
 % -----------------------------------------------------------------
 \subsection{Software Versions}
 
 \subsubsection{Alpha Version Features (vertical slice through total experience)}
-% The alpha version(s) represents the first time the game is "playable".
-% List the set of features you will be demoing in the alpha version of your game.
+
+The alpha is the first playable build, targeting the April~20 playtest. It delivers a vertical slice: a short but complete climb from a starting platform to a summit marker, demonstrating the core loop end-to-end.
+
+\begin{itemize}[leftmargin=2em]
+    \item Core climbing mechanic: swing ice picks into ice, grip, pull up. Physics-based embed detection with velocity threshold.
+    \item Ice destruction: 2-second crack timer, visual crack effect, surface shattering into fragments.
+    \item Rock platforms as checkpoints with respawn on fall.
+    \item At least one gadget functional (cold spray or grappling hook).
+    \item Basic environment: one simplified mountain column with 3--4 checkpoint platforms and connecting ice surfaces.
+    \item Altitude tracking: current and highest altitude displayed at checkpoints.
+    \item Haptic feedback on pick embed and ice cracking.
+    \item Runs on Quest~3 standalone at 72\,fps.
+\end{itemize}
 
 \subsubsection{Beta Version Features}
-% List the complete set of features to be included in the beta version.
+
+The beta targets the April~27 playtest. It expands the alpha into the full game experience.
+
+\begin{itemize}[leftmargin=2em]
+    \item Full mountain environment with three zones (Lower Ice Field, The Ridge, The Summit Push) and all checkpoint platforms.
+    \item All four gadgets functional: grappling hook, cold spray, helmet, poles.
+    \item Body-mounted harness with physical gadget grab from slots.
+    \item Supply caches placed throughout the mountain.
+    \item Route branching in Zone~2 with alternate paths.
+    \item Environmental hazards: falling rocks with shadow/audio warning, ice storms with particle effects and wind force.
+    \item Difficulty scaling with altitude (ice fragility, hazard frequency, supply scarcity).
+    \item Audio pass: ambient wind, crack escalation sounds, gadget sound effects, rockfall rumble.
+    \item Summit finale with panoramic vista.
+    \item Performance optimization pass (LODs, object pooling, foveated rendering).
+\end{itemize}
 
 \subsubsection{Descriptions of any tutorial levels and/or self-running Demos}
+
+There is no separate tutorial level. The base-camp area at the start of the game serves as an implicit tutorial:
+
+\begin{itemize}[leftmargin=2em]
+    \item The first ice wall is short (one body-length) with a rock ledge directly above, teaching the basic swing--grip--pull cycle with no risk.
+    \item A supply cache at base camp contains one of each gadget. Nearby surfaces are arranged so the player can experiment --- a rock wall for pole practice, a distant ledge for grappling hook use, and a thick ice surface for cold spray.
+    \item Ice in Zone~1 cracks slightly slower ($\sim$3\,s) to give new players extra reaction time before the standard 2-second timer kicks in at Zone~2.
+\end{itemize}
+
+No self-running demo is planned. The gameplay trailer (due May~8) will serve as the promotional demonstration.
 
 \newpage
 
