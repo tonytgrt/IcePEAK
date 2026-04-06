@@ -1,0 +1,259 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{IcePEAK}}\\[0.3em]
+    {\large CIS 5680 --- Game Design Document}\\[0.3em]
+    {\normalsize Group Game Project 2 --- Spring 2026}
+\end{center}
+
+\vspace{0.5em}
+\textbf{Group Members:} Cecilia Chen, Jacky Park, Yiding Tian
+
+\textbf{Game Title:} IcePEAK
+
+\newpage
+
+%% ============================================================
+\section{Executive Summary}
+%% ============================================================
+
+% Most important page of the design doc.
+% Usually 20--25 lines. Include 1--2 sentence descriptions of high concept,
+% target audience, market appeal, game play, implementation details, schedule.
+
+\newpage
+
+%% ============================================================
+\section{Game Design --- Creative}
+%% ============================================================
+
+% -----------------------------------------------------------------
+\subsection{High Concept}
+% What is the basic concept of your game?
+Conquer a treacherous frozen mountain in VR by driving ice picks into glacial walls with your own hands, managing supporting gadgets as you race against avalanches and crumbling ice to reach the summit alive.
+
+% -----------------------------------------------------------------
+\subsection{Design Goals}
+
+\subsubsection{Main Design Features}
+
+IcePEAK is a first-person VR climbing game in which the player physically swings ice picks into a frozen mountainside, pulls themselves upward, and manages a limited set of gadgets to survive environmental hazards on the way to the summit.
+
+\paragraph{Player goals and objectives.}
+
+\textbf{Main goal.} Reach the summit of the mountain alive.
+
+\textbf{Secondary goals.} Discover hidden supply caches along alternate routes; complete the ascent using as few gadgets as possible; find the fastest path to the top.
+
+\textbf{Type of challenges.} Physical dexterity (swinging and placing ice picks accurately under time pressure), route-finding (choosing which path upward balances speed, safety, and resource availability), and resource management (deciding when to spend limited gadgets).
+
+\textbf{Type of conflicts.} Player versus environment. The mountain itself is the antagonist: ice surfaces shatter roughly two seconds after an ice pick is planted, falling rocks threaten the climber, ice storms reduce visibility, and rock surfaces reject ice picks entirely.
+
+\textbf{Winning condition.} The player wins by reaching the summit platform at the top of the mountain. The player loses by falling below the last safe rock platform with no way to recover.
+
+\paragraph{Main rules and procedures.}
+
+\textbf{Operational rules.} The player holds one ice pick in each hand via the Quest~3 motion controllers. To climb, the player swings a pick into an ice surface, grips the controller trigger to hold on, then reaches upward with the other hand and repeats. Ice surfaces crack and break approximately two seconds after a pick is driven in, so the player must keep moving. Rock surfaces are permanent and safe to stand on but cannot be gripped by ice picks. Gadgets are grabbed from the player's body-mounted harness and activated with the trigger.
+
+\textbf{Main game mechanic --- second by second.} Swing pick into ice, grip, reach with the other hand, swing again. Watch the crack pattern spreading from the current hold and listen for the audio warning that it is about to shatter. Release before it breaks and latch onto the next surface.
+
+\textbf{Main game mechanic --- minute by minute.} Survey the rock face ahead from a safe platform. Identify the next resting ledge and plan a route through the ice to reach it. Decide whether to use a gadget (e.g.\ cold spray to buy extra seconds on a critical hold, or a grappling hook to skip a dangerous overhang). Begin the climb, react to dynamic hazards (rockfall, wind gusts), and reach the next platform.
+
+\textbf{What makes this fun.} The two-second ice timer turns every handhold into a micro-deadline, creating a rhythm of tension and relief. Because the player's real arms do the climbing, success feels physically earned. Gadget decisions add a strategic layer: using a gadget now makes life easier but leaves fewer options for harder terrain above.
+
+\paragraph{Player resources.}
+
+The player carries a limited inventory of gadgets, each with a single or limited use:
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Grappling gun hook} --- fires a hook that attaches to a distant surface, letting the player zip to a new position. Single use per hook.
+    \item \textbf{Cold spray} --- sprayed onto an ice surface to make it more rigid, significantly extending the time before it cracks (e.g.\ from two seconds to six seconds). Single use per canister.
+    \item \textbf{Helmet} --- absorbs one falling-rock strike that would otherwise injure or dislodge the player. Breaks after one hit.
+    \item \textbf{Poles} --- metal stakes that can be driven into rock surfaces, creating an anchor point that an ice pick can hook onto. This lets the player grip rock walls that would otherwise be unclimbable.
+\end{itemize}
+
+Gadgets are found in supply caches scattered across the mountain, often along riskier or longer routes. The player uses them to overcome obstacles that would be impossible or extremely difficult with ice picks alone.
+
+\paragraph{Boundaries and constraints.}
+
+The game takes place on a single massive frozen mountain. The player can only move by physically climbing; there is no teleportation or artificial locomotion. Ice surfaces are temporary (they shatter after being struck), and rock surfaces are permanent but cannot be gripped by picks unless a pole is attached. The player cannot carry unlimited gadgets --- the harness has a fixed number of slots. Falling below the last safe rock platform results in death and a restart from that platform. Visibility, wind, and ice fragility worsen with altitude, naturally constraining the pace of the ascent.
+
+\subsubsection{Appeal}
+
+\textbf{Genre.} First-person VR survival-adventure with physics-based climbing and resource management.
+
+\textbf{Target audience.} VR gamers aged 16--35 who enjoy physically active experiences and survival/adventure games. Players of titles like \textit{The Climb} (Crytek), \textit{Until You Fall}, and \textit{The Walking Dead: Saints \& Sinners} who are looking for a more intense, physics-driven challenge.
+
+\textbf{Why it is fun.} No existing VR climbing game forces the player to race against crumbling holds. The destructible-ice mechanic transforms climbing from a relaxed puzzle into a high-stakes rhythm game played with the whole body. The gadget system adds strategic depth without the abstraction of stamina bars or health meters --- every tool is a tangible object the player grabs off their own harness and physically uses. The result is a game that is immediately intuitive (swing, grab, climb) yet deeply replayable (route optimization, gadget conservation, speed runs).
+
+\subsubsection{Look and Feel}
+
+\textbf{Art style.} Semi-realistic with stylized lighting. The mountain features stark contrasts between blue-white ice, dark grey rock, and warm amber light from supply caches and the distant sunrise above the summit. The palette shifts from cool blues at the base to harsh whites and deep purples near the peak to convey increasing altitude and danger.
+
+\textbf{Color scheme.} Dominant cool tones (ice blue, slate grey, snow white) punctuated by warm accent colors on gadgets and supply caches (orange, amber) so interactive objects are immediately readable.
+
+\textbf{Similar games.} Visually inspired by \textit{The Climb} and \textit{Steep}. The tension and survival feel draw from \textit{Celeste} (translated into 3D/VR) and the environmental storytelling of \textit{Journey}.
+
+% -----------------------------------------------------------------
+\subsection{Worlds, Characters and Story}
+
+\subsubsection{Back Story}
+% If appropriate, how you will reveal this to the user.
+
+\subsubsection{Spaces/Worlds}
+% Include sketches of the worlds along with brief descriptions.
+
+\subsubsection{Characters}
+% Include sketches of all the characters along with brief descriptions
+% of their personalities and capabilities.
+
+\subsubsection{Levels of Difficulty}
+% How will you vary the level of difficulty?
+
+% -----------------------------------------------------------------
+\subsection{Interaction Models}
+
+\subsubsection{User Interface --- Navigation and Movement}
+% What does the game user interface look like and how does it work?
+% Provide a mockup sketch or image.
+
+\subsubsection{Game Play Sequence and Levels}
+% Show in the form of a flowchart and provide descriptions of transitions.
+
+\subsubsection{User/Environment --- Obstacles and Props}
+% How does the user interact with the environment?
+% How will you handle collision detection? Physics? Object manipulation, etc.
+% Be specific.
+
+\subsubsection{User/Character}
+% How does the user interact with his character and other characters? Be specific.
+
+\subsubsection{Character/Character}
+% How do characters interact?
+% How will you handle collision detection, AI, physics, etc. Be specific.
+
+\subsubsection{Puzzle Design}
+% If appropriate, describe any puzzles you plan to use in your game design.
+% Provide sketches of typical puzzle game play sequences in the Storyboard section 3.2.
+
+\subsubsection{Motion Tracking}
+% If appropriate, describe the motion tracking features of your game.
+
+\subsubsection{Multi-Player}
+% If appropriate, describe the multi-player mode.
+
+\subsubsection{Mobile}
+% If appropriate, describe the mobile features of your game.
+
+\subsubsection{Networked Play}
+% If appropriate, describe networked play.
+
+% -----------------------------------------------------------------
+\subsection{Performance and Scoring}
+
+\subsubsection{State Variables}
+% What are all the character, environment and gameplay variables necessary to
+% save/restore or pause/resume the game or virtual world experience?
+
+\subsubsection{Feedback}
+% What are the positive and negative feedback mechanisms you plan to employ
+% and how do they affect the game play (i.e.\ help or hurt player performance)?
+
+\subsubsection{Performance and Progress Metrics}
+% How will you monitor player progress regarding achieving the game's goals
+% and objectives? How do you win? How do you lose?
+
+\newpage
+
+%% ============================================================
+\section{Game Design --- Implementation Details}
+%% ============================================================
+
+% -----------------------------------------------------------------
+\subsection{Design Assumptions}
+
+\subsubsection{Hardware}
+% Minimum hardware configuration (i.e.\ processor speed, memory requirement,
+% graphics card, etc.) necessary to run game.
+
+\subsubsection{Software}
+% Version of Game Engine, Windows, DirectX, etc.\ required to run game.
+
+\subsubsection{Algorithms and Techniques}
+% What specific algorithms, plug-ins, animation techniques, etc.\ will you
+% be using to implement your game? Be specific.
+
+% -----------------------------------------------------------------
+\subsection{Storyboards}
+% Show storyboard sketches of your game environment, puzzles and gameplay
+% sequences here. This should convey the look and feel of the game as well
+% as illustrate the basic game play.
+
+% -----------------------------------------------------------------
+\subsection{Design Logic}
+
+\subsubsection{Finite State Machines --- Events/States/Effects}
+% Provide as much detail as possible of your game logic in the form of a
+% FSM graph. You can sketch this by hand or use Visio, whichever is easier.
+
+\subsubsection{User Solution/Actions}
+% Describe how the player wins the game. Include descriptions of puzzles
+% shown in Section 3.2 that must be solved. Provide as much detail as possible.
+
+% -----------------------------------------------------------------
+\subsection{Software Versions}
+
+\subsubsection{Alpha Version Features (vertical slice through total experience)}
+% The alpha version(s) represents the first time the game is "playable".
+% List the set of features you will be demoing in the alpha version of your game.
+
+\subsubsection{Beta Version Features}
+% List the complete set of features to be included in the beta version.
+
+\subsubsection{Descriptions of any tutorial levels and/or self-running Demos}
+
+\newpage
+
+%% ============================================================
+\section{Work Plan}
+%% ============================================================
+
+% -----------------------------------------------------------------
+\subsection{Tasks}
+% List and number ALL the tasks and subtasks which are necessary to develop
+% your game application.
+% Provide separate descriptions of each task and subtask, which members of
+% the group are assigned to it, and the expected task duration (in days).
+
+% -----------------------------------------------------------------
+\subsection{Milestones}
+
+\subsubsection{Minor}
+% On a week by week basis describe the functionality you plan to achieve
+% (and will be able to demonstrate).
+
+\subsubsection{Major}
+% Describe the major milestones of the project.
+
+\paragraph{Alpha Version.}
+% Describe the main functionality you plan to achieve and demonstrate.
+
+\paragraph{Beta Version.}
+% Describe the main functionality you plan to achieve and demonstrate.
+
+% -----------------------------------------------------------------
+\subsection{Development Schedule}
+% Organize your work plan tasks in the form of a Gantt chart.
+% List all the major tasks and subtasks (including durations) and the dates
+% of each minor (weekly) milestone and major milestone (e.g.\ alpha, beta, final).
+
+\end{document}
