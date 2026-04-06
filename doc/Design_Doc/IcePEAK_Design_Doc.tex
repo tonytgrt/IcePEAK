@@ -150,39 +150,99 @@ This elevation-driven curve means the player never encounters an artificial diff
 \subsection{Interaction Models}
 
 \subsubsection{User Interface --- Navigation and Movement}
-% What does the game user interface look like and how does it work?
-% Provide a mockup sketch or image.
+
+There is no traditional HUD or menu overlay during gameplay. All information is communicated through the player's body and the environment:
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Navigation.} The player moves exclusively by physically climbing --- swinging ice picks into surfaces and pulling themselves up. There is no joystick locomotion, teleportation, or artificial movement. On rock platforms the player can walk freely within the platform bounds using room-scale tracking.
+    \item \textbf{Gadget selection.} Gadgets are stored on the player's body harness. The player looks down at their chest/belt, reaches toward a gadget slot, and grabs the item with the grip button. No radial menus or button-based inventory.
+    \item \textbf{Pause menu.} Accessed by pressing the Quest~3 menu button. Pauses the game and displays options (resume, restart from last checkpoint, quit).
+\end{itemize}
+
+% TODO: Include mockup sketch of first-person harness view with gadget slots labeled.
 
 \subsubsection{Game Play Sequence and Levels}
-% Show in the form of a flowchart and provide descriptions of transitions.
+
+The game follows a linear upward progression through three zones:
+
+\begin{enumerate}[leftmargin=2em]
+    \item \textbf{Base Camp Start.} Player spawns on a rock platform. Brief environmental cues teach the controls: an ice wall directly ahead with a rock ledge just above it invites the first climb. A supply cache with one of each gadget is nearby.
+    \item \textbf{Zone 1 --- Lower Ice Field.} Gentle climbing with wide holds and frequent platforms. The player learns the ice-cracking mechanic and practices using gadgets in low-stakes situations.
+    \item \textbf{Zone 2 --- The Ridge.} Routes branch. The player chooses between paths with different risk--reward profiles. Hazards (rockfall, ice storms) are introduced. Longer stretches between checkpoints.
+    \item \textbf{Zone 3 --- The Summit Push.} Intense vertical climbing with fragile ice, rare supplies, and persistent environmental threats. Culminates in a final exposed face leading to the summit.
+    \item \textbf{Summit.} The player pulls themselves onto the peak. A panoramic vista rewards the climb. The game ends.
+\end{enumerate}
+
+Transitions between zones are seamless --- there are no loading screens. The player simply climbs from one zone into the next, with the environment gradually changing around them.
+
+% TODO: Include flowchart diagram of game sequence.
 
 \subsubsection{User/Environment --- Obstacles and Props}
-% How does the user interact with the environment?
-% How will you handle collision detection? Physics? Object manipulation, etc.
-% Be specific.
+
+\textbf{Ice surfaces.} The primary interactive surface. When the player swings an ice pick into ice with sufficient velocity, the pick embeds and the player can hold on. A crack pattern begins spreading from the impact point (visual effect plus audio cue). After approximately two seconds the surface shatters and the hold is lost. Collision detection between the ice pick tip and ice surfaces uses Unity's Rigidbody collision system. Ice destruction is handled by replacing the intact mesh with a pre-fractured version using a shattering script triggered by a timer.
+
+\textbf{Rock surfaces.} Permanent, unbreakable. Ice picks bounce off rock (detected via Rigidbody collision and surface material tag). The player can stand and walk on rock platforms. Poles can be driven into rock to create anchor points.
+
+\textbf{Supply caches.} Glowing containers embedded in the cliff face or resting on ledges. The player grabs them and the contents are automatically added to empty harness slots. Indicated by a warm amber glow and a subtle audio hum to aid discovery.
+
+\textbf{Falling rocks.} Triggered by proximity or timer events. Rocks fall from above along semi-random paths. A shadow and rumbling audio cue warn the player 1--2 seconds before impact. If a rock hits the player without a helmet, the player is knocked off the wall (losing both grips). With a helmet equipped, the first strike is absorbed and the helmet breaks.
+
+\textbf{Ice storms.} Periodic events that reduce visibility (fog/particle effects) and add a slight lateral force to the player's view, simulating wind. During storms the player must climb more carefully as visual cues for cracking ice are harder to see.
+
+\textbf{Wind gusts.} Brief directional forces that nudge the player's camera and add sway, increasing disorientation at higher altitudes.
+
+\textbf{Physics.} All climbing interactions use Unity's physics engine. Ice pick embedding is determined by the velocity of the controller swing (a minimum threshold must be met). The player's vertical position is driven by the physical act of pulling down on an embedded pick (inverse kinematics maps controller position to body movement). Falling uses standard gravity with a brief ragdoll before respawn.
 
 \subsubsection{User/Character}
-% How does the user interact with his character and other characters? Be specific.
+
+The player \emph{is} the character. There is no avatar to control indirectly. The Quest~3 controllers map directly to the player's hands:
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Grip button} --- hold to maintain grip on an embedded ice pick or a grabbed gadget.
+    \item \textbf{Trigger} --- activate a held gadget (fire grappling hook, spray cold spray, place pole).
+    \item \textbf{Swing motion} --- the speed and angle of the controller swing determine whether the ice pick embeds successfully and where.
+\end{itemize}
+
+The player looks down to see their torso, harness with gadget slots, and hands holding ice picks. Head tracking provides full look-around. There are no other characters to interact with.
 
 \subsubsection{Character/Character}
-% How do characters interact?
-% How will you handle collision detection, AI, physics, etc. Be specific.
+
+Not applicable. IcePEAK is a single-player game with no NPCs or AI characters. All conflict is player versus environment.
 
 \subsubsection{Puzzle Design}
-% If appropriate, describe any puzzles you plan to use in your game design.
-% Provide sketches of typical puzzle game play sequences in the Storyboard section 3.2.
+
+IcePEAK does not feature traditional puzzles. The ``puzzle'' element comes from route-finding: the player must read the mountain face and determine a viable path from one rock platform to the next, choosing which ice surfaces to use, which gadgets to spend, and how to sequence their moves before holds shatter. Specific route-puzzle scenarios include:
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Overhang gaps} where the player must use a grappling hook or find an alternate traverse.
+    \item \textbf{Large rock faces} with no ice, requiring poles to create anchor points before crossing.
+    \item \textbf{Timed sequences} where multiple ice surfaces must be crossed in rapid succession before any of them shatter, demanding the player plan the order and direction of their swings in advance.
+\end{itemize}
+
+% TODO: Include sketches of route-puzzle scenarios in Section 3.2 Storyboards.
 
 \subsubsection{Motion Tracking}
-% If appropriate, describe the motion tracking features of your game.
+
+IcePEAK relies heavily on the Quest~3's 6DoF (six degrees of freedom) tracking for both the headset and controllers:
+
+\begin{itemize}[leftmargin=2em]
+    \item \textbf{Controller position and velocity} are used to determine swing direction, speed, and impact point when the player drives an ice pick into a surface. A minimum velocity threshold prevents the player from gently placing picks without swinging.
+    \item \textbf{Controller orientation} determines the angle of the ice pick at impact, affecting whether the pick embeds cleanly or glances off.
+    \item \textbf{Headset tracking} provides the player's viewpoint and is used for look-based environmental awareness (spotting routes, seeing crack patterns, noticing falling-rock shadows).
+    \item \textbf{Grip state} is tracked via the controller's grip button to determine whether the player is holding onto an embedded pick or has released.
+\end{itemize}
 
 \subsubsection{Multi-Player}
-% If appropriate, describe the multi-player mode.
+
+Not applicable. IcePEAK is a single-player experience.
 
 \subsubsection{Mobile}
-% If appropriate, describe the mobile features of your game.
+
+Not applicable.
 
 \subsubsection{Networked Play}
-% If appropriate, describe networked play.
+
+Not applicable.
 
 % -----------------------------------------------------------------
 \subsection{Performance and Scoring}
