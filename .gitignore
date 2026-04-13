@@ -8,8 +8,6 @@ DerivedDataCache/
 .claude/
 .idea/
 
-doc/Plans
-
 *.aux
 *.log
 *.out
