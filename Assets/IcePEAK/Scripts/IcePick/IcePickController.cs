@@ -25,7 +25,7 @@ public class IcePickController : MonoBehaviour
     // --- Public API ---
     public bool IsEmbedded => _isEmbedded;
     public Vector3 EmbedWorldPosition => _embedWorldPos;
-    public Transform ControllerTransform => transform.parent;
+    public Transform ControllerTransform => _controllerParent;
 
     /// Invoked when the pick first embeds in an ice surface.
     public System.Action<IcePickController, SurfaceTag> OnEmbedded;
@@ -36,9 +36,15 @@ public class IcePickController : MonoBehaviour
     // --- Private ---
     private bool _isEmbedded;
     private Vector3 _embedWorldPos;
+    private Transform _controllerParent;   // cached controller transform
+    private Vector3 _localPosInParent;     // original local position
+    private Quaternion _localRotInParent;   // original local rotation
 
     private void Awake()
     {
+        _controllerParent = transform.parent;
+        _localPosInParent = transform.localPosition;
+        _localRotInParent = transform.localRotation;
     }
 
     private void OnEnable()
@@ -102,10 +108,14 @@ public class IcePickController : MonoBehaviour
     {
         _isEmbedded = true;
 
-        // Record where the tip hit — climbing locomotion uses this as the anchor
+        // Record where the tip hit
         _embedWorldPos = tipTransform.position;
 
-        // Pick stays parented to the controller (never leaves the hand)
+        // Detach from controller so the pick stays fixed in world space
+        transform.SetParent(null, worldPositionStays: true);
+
+        // Nudge the pick slightly into the surface for visual sell
+        transform.position += tipTransform.forward * embedDepth;
 
         // TODO: audio (assign audioSource and clips in Inspector first)
 
@@ -126,6 +136,11 @@ public class IcePickController : MonoBehaviour
         if (!_isEmbedded) return;
 
         _isEmbedded = false;
+
+        // Re-attach to controller
+        transform.SetParent(_controllerParent);
+        transform.localPosition = _localPosInParent;
+        transform.localRotation = _localRotInParent;
 
         Debug.Log($"[IcePick {gameObject.name}] Released");
 

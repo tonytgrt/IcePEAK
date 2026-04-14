@@ -139,6 +139,8 @@ MonoBehaviour:
   bounceSound: {fileID: 8300000, guid: b319a2e4ff8f5d840b82d8635b645d22, type: 3}
   audioSource: {fileID: 0}
   embedDepth: 0.03
+  triggerAction: {fileID: 0}
+  triggerReleaseThreshold: 0.5
 --- !u!1 &7524537411699516079
 GameObject:
   m_ObjectHideFlags: 0
@@ -206,7 +208,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SwingDetector
   velocityFrameWindow: 5
-  embedVelocityThreshold: 1.5
+  embedVelocityThreshold: 5
 --- !u!1001 &3306357604357753160
 PrefabInstance:
   m_ObjectHideFlags: 0
