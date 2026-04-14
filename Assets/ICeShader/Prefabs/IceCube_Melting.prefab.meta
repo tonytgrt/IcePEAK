@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c96b2f060bca00d44ba6fe58e17b6869
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 254961
+  packageName: Ice Shader - Melting Ice Cubes
+  packageVersion: 1.0
+  assetPath: Assets/ICeShader/Prefabs/IceCube_Melting.prefab
+  uploadId: 598288

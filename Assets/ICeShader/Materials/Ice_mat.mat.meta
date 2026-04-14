@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0e948bd879583fb4faf894b828632352
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 254961
+  packageName: Ice Shader - Melting Ice Cubes
+  packageVersion: 1.0
+  assetPath: Assets/ICeShader/Materials/Ice_mat.mat
+  uploadId: 598288
