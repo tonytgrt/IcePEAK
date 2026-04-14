@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -15,14 +16,21 @@ public class IcePickController : MonoBehaviour
     [Tooltip("How deep the pick tip sinks into the surface on embed (meters)")]
     [SerializeField] private float embedDepth = 0.03f;
 
+    [Header("Input")]
+    [Tooltip("Trigger (activate) action for this hand — use XRI > Activate Value")]
+    [SerializeField] private InputActionReference triggerAction;
+    [Tooltip("Trigger value above which the pick releases from the surface")]
+    [SerializeField] private float triggerReleaseThreshold = 0.5f;
+
     // --- Public API ---
     public bool IsEmbedded => _isEmbedded;
     public Vector3 EmbedWorldPosition => _embedWorldPos;
+    public Transform ControllerTransform => _controllerParent;
 
     /// Invoked when the pick first embeds in an ice surface.
     public System.Action<IcePickController, SurfaceTag> OnEmbedded;
 
-    /// Invoked when the pick is released (grip released or ice shattered).
+    /// Invoked when the pick is released (trigger released or ice shattered).
     public System.Action<IcePickController> OnReleased;
 
     // --- Private ---
@@ -37,6 +45,42 @@ public class IcePickController : MonoBehaviour
         _controllerParent = transform.parent;
         _localPosInParent = transform.localPosition;
         _localRotInParent = transform.localRotation;
+    }
+
+    private void OnEnable()
+    {
+        if (triggerAction == null)
+        {
+            Debug.LogWarning($"[IcePick {gameObject.name}] triggerAction is NOT assigned in Inspector!");
+            return;
+        }
+        if (triggerAction.action == null)
+        {
+            Debug.LogWarning($"[IcePick {gameObject.name}] triggerAction.action is null — broken reference?");
+            return;
+        }
+        triggerAction.action.Enable();
+        Debug.Log($"[IcePick {gameObject.name}] Trigger action enabled: '{triggerAction.action.name}' in map '{triggerAction.action.actionMap?.name}'");
+    }
+
+    private void Update()
+    {
+        if (!_isEmbedded) return;
+
+        if (triggerAction == null || triggerAction.action == null)
+        {
+            Debug.LogWarning($"[IcePick {gameObject.name}] Embedded but triggerAction is null — cannot read input!");
+            return;
+        }
+
+        float triggerValue = triggerAction.action.ReadValue<float>();
+        Debug.Log($"[IcePick {gameObject.name}] trigger={triggerValue:F3}, threshold={triggerReleaseThreshold}");
+
+        if (triggerValue > triggerReleaseThreshold)
+        {
+            Debug.Log($"[IcePick {gameObject.name}] Trigger pressed — calling Release()");
+            Release();
+        }
     }
 
     // --- Trigger Detection ---
@@ -71,9 +115,9 @@ public class IcePickController : MonoBehaviour
         // Nudge the pick slightly into the surface for visual sell
         transform.position += tipTransform.forward * embedDepth;
 
-        // Audio + haptics
-        audioSource.PlayOneShot(embedSound);
-        // Haptics are sent via the input system (see Section 10)
+        // TODO: audio (assign audioSource and clips in Inspector first)
+
+        Debug.Log($"[IcePick {gameObject.name}] Embedded! _isEmbedded={_isEmbedded}");
 
         OnEmbedded?.Invoke(this, surface);
     }
@@ -81,8 +125,7 @@ public class IcePickController : MonoBehaviour
     // --- Bounce ---
     private void Bounce(SurfaceType type)
     {
-        audioSource.PlayOneShot(bounceSound);
-        // Spark VFX for rock can be added here later
+        // TODO: audio
     }
 
     // --- Release ---
