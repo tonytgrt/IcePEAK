@@ -117,10 +117,10 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
+  m_IsKinematic: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &7374475162617031883
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,10 +135,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IcePickController
   swingDetector: {fileID: 5927139031591444332}
   tipTransform: {fileID: 7312741294301033933}
-  embedSound: {fileID: 8300000, guid: b319a2e4ff8f5d840b82d8635b645d22, type: 3}
-  bounceSound: {fileID: 8300000, guid: b319a2e4ff8f5d840b82d8635b645d22, type: 3}
-  audioSource: {fileID: 0}
+  controllerTarget: {fileID: 0}
+  positionOffset: {x: 0, y: 0, z: 0.08}
+  rotationOffset: {x: 45, y: 0, z: 0}
   embedDepth: 0.03
+  rockLedgeNormalThreshold: 0.5
   triggerAction: {fileID: 0}
   triggerReleaseThreshold: 0.5
 --- !u!1 &7524537411699516079

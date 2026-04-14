@@ -14,9 +14,9 @@ TagManager:
   - UI
   - ClimbableSurface
   - IcePickTip
-  - 
-  - 
-  - 
+  - IceSurface
+  - RockSurface
+  - IcePickBody
   - 
   - 
   - 
