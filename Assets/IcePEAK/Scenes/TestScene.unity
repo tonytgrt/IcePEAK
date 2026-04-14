@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: IcePickRight
       objectReference: {fileID: 0}
+    - target: {fileID: 155994343854641457, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1299143454721797145, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.003039092
@@ -383,6 +387,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: IcePickLeft
       objectReference: {fileID: 0}
+    - target: {fileID: 155994343854641457, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1299143454721797145, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.003039092
@@ -449,6 +457,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3145010871478248545, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
       propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6513899360509465572, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7374475162617031883, guid: 6e6ddcdd4016db14aaaa1f1f98667cde, type: 3}
