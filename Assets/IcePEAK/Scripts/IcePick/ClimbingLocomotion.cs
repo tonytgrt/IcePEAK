@@ -92,13 +92,6 @@ public class ClimbingLocomotion : MonoBehaviour
             return;
 
         xrOrigin.position += totalDelta;
-
-        // Move non-embedded picks with the rig — they're root objects now
-        // so they don't automatically move when XR Origin moves
-        if (!leftPick.IsEmbedded)
-            leftPick.transform.position += totalDelta;
-        if (!rightPick.IsEmbedded)
-            rightPick.transform.position += totalDelta;
     }
 
     private bool IsOnGround()

@@ -2,19 +2,17 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(XRPickDriver))]
 public class IcePickController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private SwingDetector swingDetector;
     [SerializeField] private Transform tipTransform;
+    [SerializeField] private XRPickDriver pickDriver;
 
-    [Header("Controller Follow")]
-    [Tooltip("Drag the Left/Right Controller transform here")]
-    [SerializeField] private Transform controllerTarget;
-    [Tooltip("Local position offset relative to the controller")]
-    [SerializeField] private Vector3 positionOffset = new Vector3(0f, 0f, 0.08f);
-    [Tooltip("Local rotation offset relative to the controller (Euler angles)")]
-    [SerializeField] private Vector3 rotationOffset = new Vector3(45f, 0f, 0f);
+    [Header("Controller Reference (for ClimbingLocomotion)")]
+    [Tooltip("The Left/Right Controller transform — only used to read position for climbing")]
+    [SerializeField] private Transform controllerTransform;
 
     [Header("Embed Settings")]
     [Tooltip("How deep the pick tip sinks into the surface on embed (meters)")]
@@ -23,6 +21,10 @@ public class IcePickController : MonoBehaviour
     [Header("Rock Settings")]
     [Tooltip("Minimum surface normal Y to count as a horizontal ledge (0=vertical, 1=flat)")]
     [SerializeField] private float rockLedgeNormalThreshold = 0.5f;
+    [Tooltip("Raycast distance from tip to find rock surface normal")]
+    [SerializeField] private float rockNormalRayDistance = 0.15f;
+    [Tooltip("Layer mask for rock surfaces")]
+    [SerializeField] private LayerMask rockLayerMask;
 
     [Header("Input")]
     [Tooltip("Trigger (activate) action for this hand — use XRI > Activate Value")]
@@ -33,7 +35,7 @@ public class IcePickController : MonoBehaviour
     // --- Public API ---
     public bool IsEmbedded => _isEmbedded;
     public Vector3 EmbedWorldPosition => _embedWorldPos;
-    public Transform ControllerTransform => controllerTarget;
+    public Transform ControllerTransform => controllerTransform;
 
     /// Invoked when the pick first embeds in a surface.
     public System.Action<IcePickController, SurfaceTag> OnEmbedded;
@@ -45,13 +47,15 @@ public class IcePickController : MonoBehaviour
     private bool _isEmbedded;
     private Vector3 _embedWorldPos;
     private Rigidbody _rb;
-    private Quaternion _rotOffsetQuat;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
+        _rb.isKinematic = true;
         _rb.useGravity = false;
-        _rotOffsetQuat = Quaternion.Euler(rotationOffset);
+
+        if (pickDriver == null)
+            pickDriver = GetComponent<XRPickDriver>();
     }
 
     private void OnEnable()
@@ -67,38 +71,6 @@ public class IcePickController : MonoBehaviour
             return;
         }
         triggerAction.action.Enable();
-        Debug.Log($"[IcePick {gameObject.name}] Trigger action enabled: '{triggerAction.action.name}'");
-    }
-
-    // --- Physics-based follow ---
-    private void FixedUpdate()
-    {
-        if (_isEmbedded || controllerTarget == null)
-        {
-            // Kill any residual velocity while embedded
-            if (!_rb.isKinematic)
-            {
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
-            }
-            return;
-        }
-
-        // Compute world-space target from controller + offset
-        Vector3 targetPos = controllerTarget.TransformPoint(positionOffset);
-        Quaternion targetRot = controllerTarget.rotation * _rotOffsetQuat;
-
-        // Drive position via velocity (physics will block rock collisions)
-        _rb.linearVelocity = (targetPos - _rb.position) / Time.fixedDeltaTime;
-
-        // Drive rotation via angular velocity
-        Quaternion deltaRot = targetRot * Quaternion.Inverse(_rb.rotation);
-        deltaRot.ToAngleAxis(out float angle, out Vector3 axis);
-        if (angle > 180f) angle -= 360f;
-        if (axis.sqrMagnitude > 0.001f)
-            _rb.angularVelocity = axis.normalized * (angle * Mathf.Deg2Rad / Time.fixedDeltaTime);
-        else
-            _rb.angularVelocity = Vector3.zero;
     }
 
     // --- Trigger release ---
@@ -116,43 +88,45 @@ public class IcePickController : MonoBehaviour
         }
     }
 
-    // --- Ice detection (via trigger collider on TipCollider child) ---
+    // --- Surface detection (via trigger colliders) ---
     private void OnTriggerEnter(Collider other)
     {
         if (_isEmbedded) return;
 
         SurfaceTag surface = other.GetComponentInParent<SurfaceTag>();
-        if (surface == null || surface.Type != SurfaceType.Ice) return;
+        if (surface == null) return;
 
-        if (swingDetector.IsSwingFastEnough)
+        if (!swingDetector.IsSwingFastEnough) return;
+
+        if (surface.Type == SurfaceType.Ice)
         {
             Debug.Log($"[IcePick {gameObject.name}] Ice embed, speed={swingDetector.CurrentSpeed:F2}");
             Embed(surface);
         }
-    }
-
-    // --- Rock detection (via physical collider on mesh) ---
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (_isEmbedded) return;
-
-        SurfaceTag surface = collision.gameObject.GetComponentInParent<SurfaceTag>();
-        if (surface == null || surface.Type != SurfaceType.Rock) return;
-
-        if (!swingDetector.IsSwingFastEnough) return;
-
-        // Check if any contact has a horizontal-enough normal (a ledge)
-        foreach (ContactPoint contact in collision.contacts)
+        else if (surface.Type == SurfaceType.Rock)
         {
-            if (contact.normal.y > rockLedgeNormalThreshold)
+            // Raycast from tip into the surface to check if it's a horizontal ledge
+            if (CheckRockLedge())
             {
-                Debug.Log($"[IcePick {gameObject.name}] Rock ledge embed, normal.y={contact.normal.y:F2}");
+                Debug.Log($"[IcePick {gameObject.name}] Rock ledge embed");
                 Embed(surface);
-                return;
+            }
+            else
+            {
+                Debug.Log($"[IcePick {gameObject.name}] Rock hit but too smooth — no grip");
             }
         }
+    }
 
-        Debug.Log($"[IcePick {gameObject.name}] Rock hit but too smooth — sliding off");
+    private bool CheckRockLedge()
+    {
+        // Cast a ray from the tip forward (into the surface) to get the normal
+        if (Physics.Raycast(tipTransform.position, tipTransform.forward,
+                            out RaycastHit hit, rockNormalRayDistance, rockLayerMask))
+        {
+            return hit.normal.y > rockLedgeNormalThreshold;
+        }
+        return false;
     }
 
     // --- Embed ---
@@ -161,13 +135,8 @@ public class IcePickController : MonoBehaviour
         _isEmbedded = true;
         _embedWorldPos = tipTransform.position;
 
-        // Kill velocity BEFORE going kinematic to prevent residual drift
-        _rb.linearVelocity = Vector3.zero;
-        _rb.angularVelocity = Vector3.zero;
-        _rb.isKinematic = true;
-
-        // Detach from XR Origin so climbing locomotion doesn't drag the pick
-        transform.SetParent(null, worldPositionStays: true);
+        // Stop the XR driver — pick freezes in world space
+        pickDriver.enabled = false;
 
         // Nudge into the surface slightly for visual sell
         transform.position += tipTransform.forward * embedDepth;
@@ -184,11 +153,8 @@ public class IcePickController : MonoBehaviour
 
         _isEmbedded = false;
 
-        // Re-parent under XR Origin (FixedUpdate handles positioning via physics)
-        transform.SetParent(controllerTarget.root, worldPositionStays: true);
-
-        // Resume physics-based following
-        _rb.isKinematic = false;
+        // Resume XR-driven tracking
+        pickDriver.enabled = true;
 
         Debug.Log($"[IcePick {gameObject.name}] Released");
 

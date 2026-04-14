@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6513899360509465572}
   - component: {fileID: 3145010871478248545}
   - component: {fileID: 7374475162617031883}
+  - component: {fileID: 9151111347399926879}
   m_Layer: 0
   m_Name: IcePick
   m_TagString: Untagged
@@ -135,13 +136,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IcePickController
   swingDetector: {fileID: 5927139031591444332}
   tipTransform: {fileID: 7312741294301033933}
-  controllerTarget: {fileID: 0}
-  positionOffset: {x: 0, y: 0, z: 0.08}
-  rotationOffset: {x: 45, y: 0, z: 0}
+  pickDriver: {fileID: 0}
+  controllerTransform: {fileID: 0}
   embedDepth: 0.03
   rockLedgeNormalThreshold: 0.5
+  rockNormalRayDistance: 0.15
+  rockLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
   triggerAction: {fileID: 0}
   triggerReleaseThreshold: 0.5
+--- !u!114 &9151111347399926879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 155994343854641457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c80f0ba08d52ee0499d03ea84e4fca4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XRPickDriver
+  positionAction: {fileID: 0}
+  rotationAction: {fileID: 0}
+  cameraOffset: {fileID: 0}
+  positionOffset: {x: 0, y: -0.06, z: -0.13}
+  rotationOffset: {x: -26.554, y: 0, z: 0}
 --- !u!1 &2033043476762512952
 GameObject:
   m_ObjectHideFlags: 0
