@@ -598,6 +598,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3cd49dc1a38aff4fa00676ddd64cf4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &638386868
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.58
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.7835
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.01758
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3177701901169135103, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_Name
+      value: IceCube
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ea20339d4e197df4898e3042029a0174, type: 3}
 --- !u!114 &682209789 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -1287,3 +1344,4 @@ SceneRoots:
   - {fileID: 1249617921}
   - {fileID: 1821286577}
   - {fileID: 1755329817}
+  - {fileID: 638386868}
