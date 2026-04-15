@@ -598,63 +598,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3cd49dc1a38aff4fa00676ddd64cf4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1001 &638386868
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.58
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.7835
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 3.01758
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3177701901169135103, guid: ea20339d4e197df4898e3042029a0174, type: 3}
-      propertyPath: m_Name
-      value: IceCube
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: ea20339d4e197df4898e3042029a0174, type: 3}
 --- !u!114 &682209789 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -1222,7 +1165,7 @@ Transform:
   m_GameObject: {fileID: 1821286573}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.493, y: 0.55, z: 2.91}
+  m_LocalPosition: {x: 2.24, y: 0.55, z: 2.91}
   m_LocalScale: {x: 1.9608, y: 5.556955, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1246,6 +1189,107 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1670256625, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
   m_PrefabInstance: {fileID: 441087506}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2035501269
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: breakTime
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: crackSize.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: crackSize.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: decalSize.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: decalSize.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: decalSize.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: crackMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 9f9a04ec4132c6e418ee3b639494faf5, type: 2}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: shatterPrefab
+      value: 
+      objectReference: {fileID: 53117777471620531, guid: 7b3eb0775db90fd46897a8de7b88c596, type: 3}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: surfaceOffset
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: debugSurfaceNormal.z
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.067
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.915
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.601
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3177701901169135103, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_Name
+      value: IceCube
+      objectReference: {fileID: 0}
+    - target: {fileID: 3970357906027228202, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 0e948bd879583fb4faf894b828632352, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ea20339d4e197df4898e3042029a0174, type: 3}
 --- !u!1 &2092139007
 GameObject:
   m_ObjectHideFlags: 0
@@ -1344,4 +1388,4 @@ SceneRoots:
   - {fileID: 1249617921}
   - {fileID: 1821286577}
   - {fileID: 1755329817}
-  - {fileID: 638386868}
+  - {fileID: 2035501269}
