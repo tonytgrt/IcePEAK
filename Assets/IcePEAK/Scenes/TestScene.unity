@@ -697,6 +697,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 024f7e83bf016c64ba7bb2febcc7a060, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.HandInteractionController
+  handCell: {fileID: 1331941238}
+  belt: {fileID: 6790451438804936751}
 --- !u!114 &682209789 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -1413,6 +1415,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 024f7e83bf016c64ba7bb2febcc7a060, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.HandInteractionController
+  handCell: {fileID: 1822494296}
+  belt: {fileID: 6790451438804936751}
 --- !u!1 &2092139007
 GameObject:
   m_ObjectHideFlags: 0
