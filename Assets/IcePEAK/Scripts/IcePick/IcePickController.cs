@@ -1,13 +1,16 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
+using IcePEAK.Gadgets;
 
 [RequireComponent(typeof(Rigidbody))]
-public class IcePickController : MonoBehaviour
+public class IcePickController : MonoBehaviour, IHoldable
 {
     [Header("References")]
     [SerializeField] private SwingDetector swingDetector;
     [SerializeField] private Transform tipTransform;
+    [Tooltip("Trigger collider on the tip — disabled while stowed so it doesn't embed in ice.")]
+    [SerializeField] private Collider tipCollider;
     [SerializeField] private AudioClip embedSound;
     [SerializeField] private AudioClip bounceSound;
     [SerializeField] private AudioSource audioSource;
@@ -145,5 +148,26 @@ public class IcePickController : MonoBehaviour
         Debug.Log($"[IcePick {gameObject.name}] Released");
 
         OnReleased?.Invoke(this);
+    }
+
+    // --- IHoldable ---
+
+    /// <summary>
+    /// Called by the belt/hand cell after the pick has been reparented into the new cell.
+    /// Stow disables the tip so a holstered pick can't embed in ice.
+    /// </summary>
+    public void OnTransfer(CellKind from, CellKind to)
+    {
+        SetStowed(to == CellKind.BeltSlot);
+    }
+
+    /// <summary>
+    /// Disables/enables the tip trigger collider and the swing detector. Safe to call repeatedly.
+    /// </summary>
+    public void SetStowed(bool stowed)
+    {
+        if (tipCollider != null) tipCollider.enabled = !stowed;
+        if (swingDetector != null) swingDetector.enabled = !stowed;
+        Debug.Log($"[IcePick {gameObject.name}] SetStowed({stowed})");
     }
 }
