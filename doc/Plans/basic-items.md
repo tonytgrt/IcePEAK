@@ -137,7 +137,10 @@ namespace IcePEAK.Gadgets {
 All three live in `Assets/IcePEAK/Scripts/Gadgets/Items/`, namespace
 `IcePEAK.Gadgets.Items`. Each implements `IHoldable` and `IActivatable`.
 
-**Common skeleton:**
+**Common skeleton** — `Activate()` satisfies the `IActivatable` contract
+and delegates to an item-named method (`Fire` / `Spray` / `Plant`) so the
+design-doc vocabulary remains in the public API. The named method holds
+the visual; `Activate()` is a one-liner:
 
 ```csharp
 public class <ItemName> : MonoBehaviour, IHoldable, IActivatable {
@@ -148,7 +151,9 @@ public class <ItemName> : MonoBehaviour, IHoldable, IActivatable {
         Debug.Log($"[<ItemName>] {from} → {to}");
     }
 
-    public void Activate() {
+    public void Activate() => <NamedMethod>();
+
+    public void <NamedMethod>() {
         if (_isPlaying) return;
         StartCoroutine(PlayVisual());
     }
@@ -161,13 +166,17 @@ public class <ItemName> : MonoBehaviour, IHoldable, IActivatable {
 }
 ```
 
-**Per-item fields and visuals:**
+**Per-item named methods, fields, and visuals:**
 
-| Script | Serialized fields | Visual behavior |
-|---|---|---|
-| `GrappleGun` | `LineRenderer streak`, `Transform barrelTip`, `float streakLength = 1f`, `float streakDuration = 0.2f` | Enable streak, set positions (`barrelTip`, `barrelTip + forward * streakLength`), wait `streakDuration`, disable. |
-| `ColdSpray` | `ParticleSystem mist`, `float burstSeconds = 0.3f` | `mist.Play()`, wait `burstSeconds`, `mist.Stop()`. |
-| `Piton` | `Transform visual`, `float plantDistance = 0.05f`, `float plantDuration = 0.2f` | Lerp `visual.localPosition.z` forward by `plantDistance` over `plantDuration / 2`, lerp back over the other half. |
+| Script | Named method | Serialized fields | Visual behavior |
+|---|---|---|---|
+| `GrappleGun` | `Fire()` | `LineRenderer streak`, `Transform barrelTip`, `float streakLength = 1f`, `float streakDuration = 0.2f` | Enable streak, set positions (`barrelTip`, `barrelTip + forward * streakLength`), wait `streakDuration`, disable. |
+| `ColdSpray` | `Spray()` | `ParticleSystem mist`, `float burstSeconds = 0.3f` | `mist.Play()`, wait `burstSeconds`, `mist.Stop()`. |
+| `Piton` | `Plant()` | `Transform visual`, `float plantDistance = 0.05f`, `float plantDuration = 0.2f` | Lerp `visual.localPosition.z` forward by `plantDistance` over `plantDuration / 2`, lerp back over the other half. |
+
+Future gameplay code can either call `Activate()` through the interface
+(uniform) or call `Fire()` / `Spray()` / `Plant()` directly when the
+caller already knows the concrete type.
 
 ### 5.3 HIC modification
 
