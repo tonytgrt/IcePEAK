@@ -75,6 +75,9 @@ namespace IcePEAK.Gadgets
                 // a direct child is still recognized (IsChildOf returns true for self too).
                 if (placeholderRenderer != null && placeholderRenderer.transform.IsChildOf(child.transform))
                     continue;
+                // Skip the hint anchor subtree — it hosts a UI canvas, not a held item.
+                if (hintAnchor != null && hintAnchor.IsChildOf(child.transform))
+                    continue;
                 HeldItem = child;
                 break;
             }
