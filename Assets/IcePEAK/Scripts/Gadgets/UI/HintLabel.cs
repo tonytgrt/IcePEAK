@@ -1,0 +1,54 @@
+using TMPro;
+using UnityEngine;
+
+namespace IcePEAK.Gadgets.UI
+{
+    /// <summary>
+    /// World-space text label used as a contextual hint near a hoverable object.
+    /// Shows/hides by toggling <see cref="root"/>. Billboards to the main camera
+    /// (HMD) in LateUpdate so the text always faces the player.
+    ///
+    /// Typically instantiated as a child of an <see cref="IHintSource.HintAnchor"/>.
+    /// </summary>
+    public class HintLabel : MonoBehaviour
+    {
+        [Header("Wiring")]
+        [SerializeField] private TMP_Text label;
+        [Tooltip("GameObject toggled to show/hide the label. Usually the Canvas child.")]
+        [SerializeField] private GameObject root;
+
+        private Camera _hmd;
+
+        private void Awake()
+        {
+            _hmd = Camera.main;
+            if (root != null) root.SetActive(false);
+        }
+
+        /// <summary>
+        /// Show the label with the given text. Null or empty hides the label.
+        /// </summary>
+        public void Show(string text)
+        {
+            if (string.IsNullOrEmpty(text)) { Hide(); return; }
+            if (label != null) label.text = text;
+            if (root != null) root.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            if (root != null) root.SetActive(false);
+        }
+
+        private void LateUpdate()
+        {
+            if (root == null || !root.activeSelf) return;
+            if (_hmd == null) _hmd = Camera.main;
+            if (_hmd == null) return;
+
+            var dir = transform.position - _hmd.transform.position;
+            if (dir.sqrMagnitude < 1e-6f) return;
+            transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+        }
+    }
+}
