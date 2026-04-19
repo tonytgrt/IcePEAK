@@ -25,6 +25,11 @@ public class IcePickController : MonoBehaviour, IHoldable
     [Tooltip("Trigger value above which the pick releases from the surface")]
     [SerializeField] private float triggerReleaseThreshold = 0.5f;
 
+    [Header("Hint")]
+    [SerializeField] private string displayName = "Ice Pick";
+
+    public string DisplayName => displayName;
+
     // --- Public API ---
     public bool IsEmbedded => _isEmbedded;
     public Vector3 EmbedWorldPosition => _embedWorldPos;

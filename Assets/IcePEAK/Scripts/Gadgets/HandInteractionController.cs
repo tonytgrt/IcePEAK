@@ -7,7 +7,8 @@ namespace IcePEAK.Gadgets
     /// Per-hand belt interaction controller. Priority order each frame:
     ///   1. Pick embedded → pick owns trigger (we early-return, pick handles release).
     ///   2. Trigger rising-edge + hand over a slot → swap/stow/draw.
-    ///   3. Otherwise no-op.
+    ///   3. Trigger rising-edge + held item implements IActivatable → Activate().
+    ///   4. Otherwise no-op.
     /// </summary>
     public class HandInteractionController : MonoBehaviour
     {
@@ -36,9 +37,9 @@ namespace IcePEAK.Gadgets
             belt.TryGetNearestSlot(handCell.Anchor.position, out var nearest);
             if (nearest != CurrentHoveredSlot)
             {
-                if (CurrentHoveredSlot != null) CurrentHoveredSlot.SetHighlighted(false);
+                if (CurrentHoveredSlot != null) CurrentHoveredSlot.SetHighlighted(false, handCell);
                 CurrentHoveredSlot = nearest;
-                if (CurrentHoveredSlot != null) CurrentHoveredSlot.SetHighlighted(true);
+                if (CurrentHoveredSlot != null) CurrentHoveredSlot.SetHighlighted(true, handCell);
             }
 
             // P1: pick embedded → pick's own Update handles trigger-to-release.
@@ -47,11 +48,21 @@ namespace IcePEAK.Gadgets
             if (triggerAction == null || triggerAction.action == null) return;
             if (!triggerAction.action.WasPressedThisFrame()) return;
 
-            // P3: nothing hovered → no-op.
-            if (CurrentHoveredSlot == null) return;
+            // P2: hovered slot → swap/stow/draw.
+            if (CurrentHoveredSlot != null)
+            {
+                ResolveBeltAction(CurrentHoveredSlot);
+                return;
+            }
 
-            // P2: swap/stow/draw.
-            ResolveBeltAction(CurrentHoveredSlot);
+            // P3: held item implements IActivatable → Activate().
+            if (handCell.HeldItem != null &&
+                handCell.HeldItem.TryGetComponent<IActivatable>(out var activatable))
+            {
+                Debug.Log($"[{name}] Activate -> {handCell.HeldItem.name}");
+                activatable.Activate();
+            }
+            // P4: otherwise no-op.
         }
 
         private void OnDisable()
@@ -81,7 +92,7 @@ namespace IcePEAK.Gadgets
             if (handItem != null) PlaceInto(slot,     handItem, CellKind.Hand);
 
             // Held item vs placeholder may have changed — re-evaluate highlight target.
-            slot.SetHighlighted(true);
+            slot.SetHighlighted(true, handCell);
         }
 
         private static void PlaceInto(ICell cell, GameObject item, CellKind from)
