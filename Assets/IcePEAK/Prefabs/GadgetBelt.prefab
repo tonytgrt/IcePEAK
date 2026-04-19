@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2a6f974d0194b4f958bb66ae7a0f64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.BeltSlot
-  initialPrefab: {fileID: 100100000, guid: d5660feffaf2b6f40881c990e02f5077, type: 3}
+  initialPrefab: {fileID: 4317376652189883991, guid: 7cae6272d84d65840a97e7e19e558f4c, type: 3}
   placeholderRenderer: {fileID: 2690460162757253790}
   highlightEmissive: {r: 2, g: 1.7, b: 0.6, a: 2}
 --- !u!1 &4787620884513973026
@@ -238,7 +238,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2a6f974d0194b4f958bb66ae7a0f64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.BeltSlot
-  initialPrefab: {fileID: 100100000, guid: d956efff8a4c88c43b95daddee6093ef, type: 3}
+  initialPrefab: {fileID: 7742858703253774205, guid: d956efff8a4c88c43b95daddee6093ef, type: 3}
   placeholderRenderer: {fileID: 7693024238654575284}
   highlightEmissive: {r: 2, g: 1.7, b: 0.6, a: 2}
 --- !u!1 &6086698924718202950
@@ -466,7 +466,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2a6f974d0194b4f958bb66ae7a0f64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.BeltSlot
-  initialPrefab: {fileID: 100100000, guid: 7cae6272d84d65840a97e7e19e558f4c, type: 3}
+  initialPrefab: {fileID: 0}
   placeholderRenderer: {fileID: 3338890935161983290}
   highlightEmissive: {r: 2, g: 1.7, b: 0.6, a: 2}
 --- !u!1 &8600333361409188850
@@ -514,7 +514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2a6f974d0194b4f958bb66ae7a0f64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.BeltSlot
-  initialPrefab: {fileID: 0}
+  initialPrefab: {fileID: 516760954104664860, guid: d5660feffaf2b6f40881c990e02f5077, type: 3}
   placeholderRenderer: {fileID: 1770269281501695581}
   highlightEmissive: {r: 2, g: 1.7, b: 0.6, a: 2}
 --- !u!1 &9106560982091385821
