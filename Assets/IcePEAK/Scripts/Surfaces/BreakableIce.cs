@@ -50,6 +50,7 @@ public class BreakableIce : MonoBehaviour
         public GameObject quad;
         public Material materialInstance;
         public float timer;
+        public IcePickController pick;
     }
 
     private void OnEnable()
@@ -79,7 +80,7 @@ public class BreakableIce : MonoBehaviour
         // Snap the embed point to the nearest face of the cube's bounds.
         // This works reliably regardless of pick orientation or embed depth.
         SnapToNearestFace(pick.EmbedWorldPosition, out Vector3 surfacePoint, out Vector3 surfaceNormal);
-        SpawnCrackQuad(surfacePoint, surfaceNormal);
+        SpawnCrackQuad(surfacePoint, surfaceNormal, pick);
     }
 
     /// <summary>
@@ -127,7 +128,7 @@ public class BreakableIce : MonoBehaviour
     /// <summary>
     /// Spawns a textured quad facing along surfaceNormal, hovering just above the hit point.
     /// </summary>
-    private void SpawnCrackQuad(Vector3 worldPos, Vector3 surfaceNormal)
+    private void SpawnCrackQuad(Vector3 worldPos, Vector3 surfaceNormal, IcePickController pick = null)
     {
         if (crackMaterial == null)
         {
@@ -158,6 +159,7 @@ public class BreakableIce : MonoBehaviour
             quad = go,
             materialInstance = matInstance,
             timer = 0f,
+            pick = pick,
         });
 
         SetFrame(matInstance, 0);
@@ -256,6 +258,14 @@ public class BreakableIce : MonoBehaviour
     {
         if (_isBroken) return;
         _isBroken = true;
+
+        // Release any picks still embedded in this cube so they return to the
+        // player's hand instead of being stranded in mid-air when we destroy it.
+        foreach (var crack in _cracks)
+        {
+            if (crack.pick != null && crack.pick.IsEmbedded)
+                crack.pick.Release();
+        }
 
         if (shatterPrefab != null)
             Instantiate(shatterPrefab, transform.position, transform.rotation);
