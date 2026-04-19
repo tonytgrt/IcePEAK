@@ -177,6 +177,11 @@ public class BreakableIce : MonoBehaviour
 
             foreach (var crack in _cracks)
             {
+                // Only advance the timer while a pick is still embedded in this
+                // cube. Releasing the pick pauses cracking at its current frame.
+                if (crack.pick != null && !crack.pick.IsEmbedded)
+                    continue;
+
                 crack.timer += Time.deltaTime;
                 float t = Mathf.Clamp01(crack.timer / breakTime);
 
