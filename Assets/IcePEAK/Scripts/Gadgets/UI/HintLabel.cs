@@ -51,10 +51,21 @@ namespace IcePEAK.Gadgets.UI
             if (_hmd == null) _hmd = ResolveHmd();
             if (_hmd == null) return;
 
-            // Full look-at with world-up as the up reference: the card yaws to track HMD
-            // heading AND pitches up toward the HMD when viewed from above (standard when
-            // looking down at the belt), while its roll stays aligned to world-up.
+            // Yaw is fixed to "belt forward" — the parent anchor's forward projected onto
+            // the horizontal plane. Pitch tracks HMD elevation so the card tilts its face
+            // up toward the player when viewed from above. Roll stays at zero.
+            var yawSource = transform.parent != null ? transform.parent : transform;
+            var beltFwd = yawSource.forward;
+            beltFwd.y = 0f;
+            if (beltFwd.sqrMagnitude < 1e-6f) return;
+            beltFwd.Normalize();
+
+            // Strip the horizontal component perpendicular to beltFwd from the HMD→label
+            // vector so the resulting look direction lies entirely in the vertical plane
+            // spanned by beltFwd and world-up — yaw stays locked, pitch comes from HMD Y.
+            var perp = new Vector3(beltFwd.z, 0f, -beltFwd.x);
             var dir = transform.position - _hmd.transform.position;
+            dir -= Vector3.Dot(dir, perp) * perp;
             if (dir.sqrMagnitude < 1e-6f) return;
             transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
         }
