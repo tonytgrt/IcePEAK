@@ -171,27 +171,24 @@ public class BreakableIce : MonoBehaviour
 
     /// <summary>
     /// Builds a tessellated grid in the surface plane, then snaps each vertex onto the
-    /// collider surface. Points that would fall past an edge get projected onto the
-    /// neighboring face, so the resulting mesh bends around corners. Works for any
-    /// collider that implements ClosestPoint (Box/Sphere/Capsule/convex Mesh); other
-    /// colliders degrade to a flat quad.
+    /// collider surface. Points inside the face bounds land flat on the face; points
+    /// past an edge get wrapped onto the neighbouring face via a raycast toward the
+    /// collider centre. Works for any collider whose geometry supports Raycast
+    /// (Box/Sphere/Capsule/Mesh); falls back to ClosestPoint clamp if both probes miss.
     /// </summary>
     private Mesh BuildConformingMesh(Vector3 hitCenterWorld, Vector3 surfaceNormal)
     {
         var col = GetComponent<Collider>();
         if (col == null) return null;
 
-        // Tangent basis spanning the local face plane.
         Vector3 tangent = Vector3.Cross(surfaceNormal, Vector3.up);
         if (tangent.sqrMagnitude < 1e-4f) tangent = Vector3.Cross(surfaceNormal, Vector3.right);
         tangent.Normalize();
         Vector3 bitangent = Vector3.Cross(surfaceNormal, tangent).normalized;
 
-        // Offset probe points well outside the collider. Collider.ClosestPoint returns
-        // the input unchanged when it's already inside the collider, so we need to
-        // approach from outside along the face normal to get a consistent snap.
-        float pushOutside = col.bounds.size.magnitude * 2f + 1f;
         Vector3 colliderCenter = col.bounds.center;
+        float probeHeight = Mathf.Max(surfaceOffset, 0.005f);
+        float maxRayDist = col.bounds.size.magnitude * 3f + 1f;
 
         int n = Mathf.Max(1, tessellation);
         int sideVerts = n + 1;
@@ -208,18 +205,12 @@ public class BreakableIce : MonoBehaviour
                 Vector3 flatCenter = hitCenterWorld
                                      + tangent * ((u - 0.5f) * crackSize.x)
                                      + bitangent * ((v - 0.5f) * crackSize.y);
-                Vector3 probe = flatCenter + surfaceNormal * pushOutside;
-                Vector3 snapped = col.ClosestPoint(probe);
 
-                // Push off the surface along the outward direction from the collider
-                // centre — matches the face normal on flat regions and bisects at
-                // edges/corners, giving a uniform small surfaceOffset.
-                Vector3 outward = snapped - colliderCenter;
-                if (outward.sqrMagnitude < 1e-6f) outward = surfaceNormal;
-                else outward.Normalize();
+                SnapToSurface(col, colliderCenter, flatCenter, surfaceNormal,
+                              probeHeight, maxRayDist,
+                              out Vector3 snapped, out Vector3 outward);
 
                 Vector3 world = snapped + outward * surfaceOffset;
-                // Store in the cube's local space so the mesh tracks rotation/scale.
                 verts[y * sideVerts + x] = transform.InverseTransformPoint(world);
                 uvs[y * sideVerts + x] = new Vector2(u, v);
             }
@@ -234,7 +225,6 @@ public class BreakableIce : MonoBehaviour
                 int i1 = i0 + 1;
                 int i2 = i0 + sideVerts;
                 int i3 = i2 + 1;
-                // Winding so (v1-v0) × (v2-v0) points outward.
                 tris[ti++] = i0; tris[ti++] = i1; tris[ti++] = i2;
                 tris[ti++] = i1; tris[ti++] = i3; tris[ti++] = i2;
             }
@@ -247,6 +237,44 @@ public class BreakableIce : MonoBehaviour
         m.RecalculateNormals();
         m.RecalculateBounds();
         return m;
+    }
+
+    /// <summary>
+    /// Two-stage projection. Stage 1: cast straight down onto the original face plane —
+    /// gives an exact landing on flat regions. Stage 2: if (1) misses, the grid point is
+    /// past an edge, so cast from the same origin toward the collider centre; the ray
+    /// enters the solid through the neighbouring face, which is the wrapped position.
+    /// </summary>
+    private static void SnapToSurface(Collider col, Vector3 colliderCenter, Vector3 flatCenter,
+        Vector3 surfaceNormal, float probeHeight, float maxRayDist,
+        out Vector3 point, out Vector3 normal)
+    {
+        Vector3 probeOrigin = flatCenter + surfaceNormal * probeHeight;
+
+        if (col.Raycast(new Ray(probeOrigin, -surfaceNormal), out RaycastHit downHit,
+                        probeHeight * 2f + 1f))
+        {
+            point = downHit.point;
+            normal = downHit.normal;
+            return;
+        }
+
+        Vector3 toCenter = colliderCenter - probeOrigin;
+        if (toCenter.sqrMagnitude > 1e-6f &&
+            col.Raycast(new Ray(probeOrigin, toCenter.normalized), out RaycastHit wrapHit,
+                        maxRayDist))
+        {
+            point = wrapHit.point;
+            normal = wrapHit.normal;
+            return;
+        }
+
+        // Degenerate fallback: clamp to nearest surface point (old non-wrapping behaviour).
+        Vector3 farProbe = flatCenter + surfaceNormal * (col.bounds.size.magnitude * 2f + 1f);
+        point = col.ClosestPoint(farProbe);
+        normal = point - colliderCenter;
+        if (normal.sqrMagnitude < 1e-6f) normal = surfaceNormal;
+        else normal.Normalize();
     }
 
     private void Update()
