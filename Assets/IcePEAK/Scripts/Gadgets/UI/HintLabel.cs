@@ -21,7 +21,6 @@ namespace IcePEAK.Gadgets.UI
 
         private void Awake()
         {
-            _hmd = Camera.main;
             if (root != null) root.SetActive(false);
         }
 
@@ -33,6 +32,7 @@ namespace IcePEAK.Gadgets.UI
             if (string.IsNullOrEmpty(text)) { Hide(); return; }
             if (label != null) label.text = text;
             if (root != null) root.SetActive(true);
+            FaceHmd();
         }
 
         public void Hide()
@@ -43,12 +43,26 @@ namespace IcePEAK.Gadgets.UI
         private void LateUpdate()
         {
             if (root == null || !root.activeSelf) return;
-            if (_hmd == null) _hmd = Camera.main;
+            FaceHmd();
+        }
+
+        private void FaceHmd()
+        {
+            if (_hmd == null) _hmd = ResolveHmd();
             if (_hmd == null) return;
 
             var dir = transform.position - _hmd.transform.position;
             if (dir.sqrMagnitude < 1e-6f) return;
             transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+        }
+
+        private static Camera ResolveHmd()
+        {
+            var main = Camera.main;
+            if (main != null) return main;
+            // Fallback for XR rigs whose center-eye camera isn't tagged MainCamera.
+            var cams = Camera.allCameras;
+            return cams.Length > 0 ? cams[0] : null;
         }
     }
 }
