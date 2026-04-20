@@ -19,6 +19,8 @@ namespace IcePEAK.Player
         [SerializeField] private ScreenFader fader;
         [SerializeField] private IcePickController leftPick;
         [SerializeField] private IcePickController rightPick;
+        [Tooltip("Optional. If assigned, all breakable ice in the scene is restored on respawn.")]
+        [SerializeField] private IceRespawner iceRespawner;
 
         [Header("Ground Detection")]
         [SerializeField] private LayerMask groundLayer;
@@ -100,6 +102,8 @@ namespace IcePEAK.Player
             if (rightPick != null && rightPick.IsEmbedded) rightPick.Release();
 
             TeleportToSpawn();
+
+            if (iceRespawner != null) iceRespawner.RespawnAll();
 
             if (blackoutHoldSeconds > 0f)
                 yield return new WaitForSecondsRealtime(blackoutHoldSeconds);

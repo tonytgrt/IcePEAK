@@ -63,8 +63,7 @@ public class BreakableIceDecal : MonoBehaviour
     {
         if (_isBroken) return;
 
-        if (surface == null || surface.gameObject != gameObject &&
-            surface.transform.root != transform.root)
+        if (surface == null || surface.gameObject != gameObject)
             return;
 
         SnapToNearestFace(pick.EmbedWorldPosition, out Vector3 surfacePoint, out Vector3 surfaceNormal);
@@ -246,7 +245,10 @@ public class BreakableIceDecal : MonoBehaviour
         }
 
         if (shatterPrefab != null)
-            Instantiate(shatterPrefab, transform.position, transform.rotation);
+        {
+            var debris = Instantiate(shatterPrefab, transform.position, transform.rotation);
+            debris.AddComponent<ShatterDebris>();
+        }
 
         Destroy(gameObject);
     }

@@ -77,8 +77,7 @@ public class BreakableIce : MonoBehaviour
     {
         if (_isBroken) return;
 
-        if (surface == null || surface.gameObject != gameObject &&
-            surface.transform.root != transform.root)
+        if (surface == null || surface.gameObject != gameObject)
             return;
 
         // Snap the embed point to the nearest face of the cube's bounds.
@@ -385,7 +384,10 @@ public class BreakableIce : MonoBehaviour
         }
 
         if (shatterPrefab != null)
-            Instantiate(shatterPrefab, transform.position, transform.rotation);
+        {
+            var debris = Instantiate(shatterPrefab, transform.position, transform.rotation);
+            debris.AddComponent<ShatterDebris>();
+        }
 
         Destroy(gameObject);
     }
