@@ -75,7 +75,7 @@ namespace IcePEAK.Gadgets.Items
             {
                 _zipAnchor = hit.point;
 
-                if (!_locomotion.StartZip(_zipAnchor, hit.normal, OnArrival)) return;
+                if (!_locomotion.StartZip(_zipAnchor, hit.normal, barrelTip.position, OnArrival)) return;
 
                 _isZipping = true;
                 if (rope != null)

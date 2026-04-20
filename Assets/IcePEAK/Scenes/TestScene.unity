@@ -1193,6 +1193,7 @@ MonoBehaviour:
   - {fileID: 547568285}
   - {fileID: 1699383943}
   - {fileID: 1149701953}
+  - {fileID: 1232350263}
   zipDuration: 0.5
   surfaceOffset: 0.5
   zipEase:

@@ -37,20 +37,23 @@ namespace IcePEAK.Gadgets
         private bool _isZipping;
 
         /// <summary>
-        /// Begin a zip to <paramref name="anchor"/>. Returns <c>false</c> if a
-        /// zip is already running — callers should not start any rope visuals
-        /// in that case.
+        /// Begin a zip. The rig is translated so that <paramref name="pullPoint"/>
+        /// (typically the gun's barrel tip at fire time) ends up at
+        /// <c>anchor + normal * surfaceOffset</c>. This means the body travels
+        /// along the rope line rather than from its feet to the hit point.
+        /// Returns <c>false</c> if a zip is already running — callers should
+        /// not start any rope visuals in that case.
         /// </summary>
-        public bool StartZip(Vector3 anchor, Vector3 normal, System.Action onArrival)
+        public bool StartZip(Vector3 anchor, Vector3 normal, Vector3 pullPoint, System.Action onArrival)
         {
             if (_isZipping) return false;
             if (xrOrigin == null) return false;
 
-            StartCoroutine(ZipRoutine(anchor, normal, onArrival));
+            StartCoroutine(ZipRoutine(anchor, normal, pullPoint, onArrival));
             return true;
         }
 
-        private IEnumerator ZipRoutine(Vector3 anchor, Vector3 normal, System.Action onArrival)
+        private IEnumerator ZipRoutine(Vector3 anchor, Vector3 normal, Vector3 pullPoint, System.Action onArrival)
         {
             _isZipping = true;
 
@@ -59,7 +62,9 @@ namespace IcePEAK.Gadgets
             if (rightPick != null) { rightPick.Release(); rightPick.SetStowed(true); }
 
             Vector3 start = xrOrigin.position;
-            Vector3 end = anchor + normal.normalized * surfaceOffset;
+            Vector3 nozzleLanding = anchor + normal.normalized * surfaceOffset;
+            // Translate xrOrigin by the delta that brings pullPoint to nozzleLanding.
+            Vector3 end = start + (nozzleLanding - pullPoint);
             float elapsed = 0f;
 
             while (elapsed < zipDuration)
