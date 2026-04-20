@@ -2659,6 +2659,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1232350263}
+    - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1232350264}
     - targetCorrespondingSourceObject: {fileID: 202364687, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 592248217}
@@ -6106,6 +6109,142 @@ MonoBehaviour:
   - {fileID: 547568285}
   - {fileID: 1699383943}
   - {fileID: 1149701953}
+--- !u!114 &1232350264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1232350256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6701a1807aad85547bddd78e9b16332f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::IcePEAK.Gadgets.GrappleLocomotion
+  xrOrigin: {fileID: 1232350262}
+  leftPick: {fileID: 439001644}
+  rightPick: {fileID: 1519350269}
+  locomotionProviders:
+  - {fileID: 682209789}
+  - {fileID: 1552155757}
+  - {fileID: 432574438}
+  - {fileID: 547568285}
+  - {fileID: 1699383943}
+  - {fileID: 1149701953}
+  - {fileID: 1232350263}
+  zipSpeed: 5
+  zipDuration: 2
+  surfaceOffset: 0.1
+--- !u!1001 &1247159743
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 71329097}
+    m_Modifications:
+    - target: {fileID: -3037734254034197907, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_Material
+      value:
+      objectReference: {fileID: 1609336725}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: breakTime
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: crackSize.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: crackSize.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: decalSize.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: decalSize.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: decalSize.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: crackMaterial
+      value:
+      objectReference: {fileID: 2100000, guid: 9f9a04ec4132c6e418ee3b639494faf5, type: 2}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: shatterPrefab
+      value:
+      objectReference: {fileID: 53117777471620531, guid: db6d97390c0d62e43bf954ffb18fdd43, type: 3}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: surfaceOffset
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: 2410512874005445750, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: debugSurfaceNormal.z
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.9050002
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3177701901169135103, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: m_Name
+      value: IceCube (41)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3970357906027228202, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value:
+      objectReference: {fileID: 2100000, guid: 0e948bd879583fb4faf894b828632352, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+--- !u!4 &1247159744 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2833511448720004933, guid: ea20339d4e197df4898e3042029a0174, type: 3}
+  m_PrefabInstance: {fileID: 1247159743}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1249617917
 GameObject:
   m_ObjectHideFlags: 0
