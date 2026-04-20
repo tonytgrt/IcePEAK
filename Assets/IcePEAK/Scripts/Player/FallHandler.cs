@@ -74,8 +74,13 @@ namespace IcePEAK.Player
         private bool IsOnGround()
         {
             if (xrOrigin == null) return true;
-            return Physics.Raycast(xrOrigin.position, Vector3.down,
-                                   groundCheckDistance, groundLayer);
+            // Lift the ray start so it doesn't begin inside the ground when the
+            // rig is standing exactly on floor level (XR Origin sits at foot Y).
+            const float startUp = 0.1f;
+            return Physics.Raycast(xrOrigin.position + Vector3.up * startUp,
+                                   Vector3.down,
+                                   groundCheckDistance + startUp,
+                                   groundLayer);
         }
 
         /// <summary>
