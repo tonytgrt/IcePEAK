@@ -41,22 +41,12 @@ namespace IcePEAK.Gadgets.Items
         private bool _isStowed = true;
         private bool _isZipping;
         private bool _isDryFiring;
-        private ICell _owningCell;
         private GrappleLocomotion _locomotion;
         private Vector3 _zipAnchor;
 
         public void OnTransfer(CellKind from, CellKind to)
         {
             _isStowed = (to == CellKind.BeltSlot);
-
-            if (to == CellKind.Hand)
-            {
-                _owningCell = ResolveOwningCell();
-            }
-            else
-            {
-                _owningCell = null;
-            }
 
             if (_isStowed)
             {
@@ -159,13 +149,8 @@ namespace IcePEAK.Gadgets.Items
         private void OnArrival()
         {
             if (rope != null) rope.enabled = false;
-            if (laser != null) laser.enabled = false;
-
-            if (_owningCell != null)
-            {
-                _owningCell.Take();
-            }
-            Destroy(gameObject);
+            // Gun stays in the hand — infinite uses for now. Update() will
+            // resume the laser preview on the next frame.
         }
 
         private bool TryResolveLocomotion()
@@ -173,18 +158,6 @@ namespace IcePEAK.Gadgets.Items
             if (_locomotion != null) return true;
             _locomotion = FindAnyObjectByType<GrappleLocomotion>();
             return _locomotion != null;
-        }
-
-        private ICell ResolveOwningCell()
-        {
-            Transform t = transform.parent;
-            while (t != null)
-            {
-                var cell = t.GetComponent<ICell>();
-                if (cell != null) return cell;
-                t = t.parent;
-            }
-            return null;
         }
     }
 }
