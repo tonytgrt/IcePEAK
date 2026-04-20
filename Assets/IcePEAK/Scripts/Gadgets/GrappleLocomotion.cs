@@ -26,10 +26,10 @@ namespace IcePEAK.Gadgets
         [SerializeField] private MonoBehaviour[] locomotionProviders;
 
         [Header("Tunables")]
-        [Tooltip("Seconds to travel from fire to arrival.")]
-        [SerializeField] private float zipDuration = 0.5f;
-        [Tooltip("Meters to stop short of the surface along its normal.")]
-        [SerializeField] private float surfaceOffset = 0.5f;
+        [Tooltip("Seconds to travel from fire to arrival. Longer = more time for the off-hand to swing an ice pick into the arriving surface.")]
+        [SerializeField] private float zipDuration = 1.0f;
+        [Tooltip("Meters to stop the gun's nozzle short of the surface along its normal. Keep small so the off-hand can reach the wall with an ice pick.")]
+        [SerializeField] private float surfaceOffset = 0.1f;
         [SerializeField] private AnimationCurve zipEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
         public bool IsZipping => _isZipping;
@@ -58,8 +58,11 @@ namespace IcePEAK.Gadgets
             _isZipping = true;
 
             SetLocomotionProviders(false);
-            if (leftPick != null) { leftPick.Release(); leftPick.SetStowed(true); }
-            if (rightPick != null) { rightPick.Release(); rightPick.SetStowed(true); }
+            // Detach any currently-embedded picks so the player doesn't drag
+            // through the old anchor. Picks stay live (not stowed) during the
+            // zip so the off-hand can swing one into the arriving surface.
+            if (leftPick != null) leftPick.Release();
+            if (rightPick != null) rightPick.Release();
 
             Vector3 start = xrOrigin.position;
             Vector3 nozzleLanding = anchor + normal.normalized * surfaceOffset;
@@ -77,8 +80,6 @@ namespace IcePEAK.Gadgets
             }
             xrOrigin.position = end;
 
-            if (leftPick != null) leftPick.SetStowed(false);
-            if (rightPick != null) rightPick.SetStowed(false);
             SetLocomotionProviders(true);
 
             _isZipping = false;

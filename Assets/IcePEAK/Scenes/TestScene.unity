@@ -1194,8 +1194,8 @@ MonoBehaviour:
   - {fileID: 1699383943}
   - {fileID: 1149701953}
   - {fileID: 1232350263}
-  zipDuration: 0.5
-  surfaceOffset: 0.5
+  zipDuration: 1
+  surfaceOffset: 0.1
   zipEase:
     serializedVersion: 2
     m_Curve:

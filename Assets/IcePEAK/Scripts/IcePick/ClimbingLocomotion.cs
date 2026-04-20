@@ -27,6 +27,13 @@ public class ClimbingLocomotion : MonoBehaviour
         rightPick.OnEmbedded += OnPickEmbedded;
         leftPick.OnReleased += OnPickReleased;
         rightPick.OnReleased += OnPickReleased;
+
+        // If a pick is already embedded at enable time, its OnEmbedded was
+        // missed — GrappleLocomotion can disable us for the duration of a zip,
+        // during which the off-hand may have swung a pick into the arriving
+        // surface. Sync prev pos so the first Update doesn't apply a stale delta.
+        if (leftPick.IsEmbedded) _leftPrevPos = leftPick.ControllerTransform.position;
+        if (rightPick.IsEmbedded) _rightPrevPos = rightPick.ControllerTransform.position;
     }
 
     private void OnDisable()
