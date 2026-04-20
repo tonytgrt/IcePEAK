@@ -38,22 +38,23 @@ namespace IcePEAK.Gadgets
 
         /// <summary>
         /// Begin a zip. The rig is translated so that <paramref name="pullPoint"/>
-        /// (typically the gun's barrel tip at fire time) ends up at
-        /// <c>anchor + normal * surfaceOffset</c>. This means the body travels
-        /// along the rope line rather than from its feet to the hit point.
+        /// (typically the gun's barrel tip at fire time) ends up <c>surfaceOffset</c>
+        /// meters short of <paramref name="anchor"/> along the rope line. This
+        /// keeps the gun on the aim axis regardless of surface orientation, so
+        /// an angled wall doesn't shove the player sideways.
         /// Returns <c>false</c> if a zip is already running — callers should
         /// not start any rope visuals in that case.
         /// </summary>
-        public bool StartZip(Vector3 anchor, Vector3 normal, Vector3 pullPoint, System.Action onArrival)
+        public bool StartZip(Vector3 anchor, Vector3 pullPoint, System.Action onArrival)
         {
             if (_isZipping) return false;
             if (xrOrigin == null) return false;
 
-            StartCoroutine(ZipRoutine(anchor, normal, pullPoint, onArrival));
+            StartCoroutine(ZipRoutine(anchor, pullPoint, onArrival));
             return true;
         }
 
-        private IEnumerator ZipRoutine(Vector3 anchor, Vector3 normal, Vector3 pullPoint, System.Action onArrival)
+        private IEnumerator ZipRoutine(Vector3 anchor, Vector3 pullPoint, System.Action onArrival)
         {
             _isZipping = true;
 
@@ -65,7 +66,14 @@ namespace IcePEAK.Gadgets
             if (rightPick != null) rightPick.Release();
 
             Vector3 start = xrOrigin.position;
-            Vector3 nozzleLanding = anchor + normal.normalized * surfaceOffset;
+            // Offset back along the rope line (anchor → pullPoint) so the nozzle
+            // lands a fixed distance short of the surface along the aim axis,
+            // regardless of surface orientation. This keeps angled walls from
+            // pushing the landing point far off to the side.
+            Vector3 ropeDir = anchor - pullPoint;
+            Vector3 nozzleLanding = ropeDir.sqrMagnitude > 1e-6f
+                ? anchor - ropeDir.normalized * surfaceOffset
+                : anchor;
             // Translate xrOrigin by the delta that brings pullPoint to nozzleLanding.
             Vector3 end = start + (nozzleLanding - pullPoint);
             float elapsed = 0f;
