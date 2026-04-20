@@ -68,6 +68,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ice2
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f56b6749713a4304188032a416015e43, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -121,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aeeae6c940ba0e49904378a8ae38ac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakableIceDecal
-  breakTime: 2
+  breakTime: 200
   crackDecalMaterial: {fileID: 2100000, guid: 41b139082c82005458195aa336638cd2, type: 2}
   decalSize: {x: 1, y: 1, z: 1}
   sheetColumns: 2

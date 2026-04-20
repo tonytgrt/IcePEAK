@@ -37,6 +37,7 @@ public class BreakableIceDecal : MonoBehaviour
 
     private readonly List<CrackInstance> _cracks = new();
     private bool _isBroken;
+    private static Dictionary<IcePickController, BreakableIceDecal> _pickEmbedMap = new();
 
     private class CrackInstance
     {
@@ -45,18 +46,25 @@ public class BreakableIceDecal : MonoBehaviour
         public float timer;
         public int lastCellIndex;
         public IcePickController pick;
+        public bool isActive;
     }
 
     private void OnEnable()
     {
         foreach (var pick in FindObjectsByType<IcePickController>(FindObjectsSortMode.None))
+        {
             pick.OnEmbedded += HandlePickEmbedded;
+            pick.OnReleased += HandlePickReleased;
+        }
     }
 
     private void OnDisable()
     {
         foreach (var pick in FindObjectsByType<IcePickController>(FindObjectsSortMode.None))
+        {
             pick.OnEmbedded -= HandlePickEmbedded;
+            pick.OnReleased -= HandlePickReleased;
+        }
     }
 
     private void HandlePickEmbedded(IcePickController pick, SurfaceTag surface)
@@ -66,8 +74,15 @@ public class BreakableIceDecal : MonoBehaviour
         if (surface == null || surface.gameObject != gameObject)
             return;
 
+        _pickEmbedMap[pick] = this;
+
         SnapToNearestFace(pick.EmbedWorldPosition, out Vector3 surfacePoint, out Vector3 surfaceNormal);
         SpawnCrackDecal(surfacePoint, surfaceNormal, pick);
+    }
+
+    private void HandlePickReleased(IcePickController pick)
+    {
+        _pickEmbedMap.Remove(pick);
     }
 
     private void SnapToNearestFace(Vector3 worldPoint, out Vector3 surfacePoint, out Vector3 outwardNormal)
@@ -132,6 +147,7 @@ public class BreakableIceDecal : MonoBehaviour
             timer = 0f,
             lastCellIndex = -1,
             pick = pick,
+            isActive = true,
         };
         _cracks.Add(instance);
 
@@ -150,9 +166,8 @@ public class BreakableIceDecal : MonoBehaviour
 
             foreach (var crack in _cracks)
             {
-                // Only advance the timer while a pick is still embedded in this
-                // ice. Releasing the pick pauses cracking at its current frame.
-                if (crack.pick != null && !crack.pick.IsEmbedded)
+                // Only advance timer if this pick is currently embedded in THIS cube
+                if (crack.pick == null || !_pickEmbedMap.TryGetValue(crack.pick, out var embeddedIn) || embeddedIn != this)
                     continue;
 
                 crack.timer += Time.deltaTime;
