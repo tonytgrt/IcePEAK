@@ -125,7 +125,7 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 2723329250833050464, guid: 561d92f7c747dbf459587e03e0c9dbd1, type: 3}
 --- !u!114 &4697088384637737478
@@ -140,9 +140,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aeeae6c940ba0e49904378a8ae38ac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakableIceDecal
-  breakTime: 2
+  breakTime: 4
   crackDecalMaterial: {fileID: 2100000, guid: 41b139082c82005458195aa336638cd2, type: 2}
-  decalSize: {x: 1, y: 1, z: 1}
+  decalSize: {x: 0.5, y: 0.5, z: 1}
   sheetColumns: 2
   sheetRows: 2
   frameOrder: 
