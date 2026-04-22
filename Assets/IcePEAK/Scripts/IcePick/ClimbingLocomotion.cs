@@ -20,6 +20,16 @@ public class ClimbingLocomotion : MonoBehaviour
     // Track controller positions for climbing delta
     private Vector3 _leftPrevPos;
     private Vector3 _rightPrevPos;
+    private Transform _grappleAnchor;
+    private Vector3 _grapplePrevPos;
+
+    public void SetGrappleAnchor(Transform anchor)
+    {
+        _grappleAnchor = anchor;
+        if (anchor != null)
+            _grapplePrevPos = anchor.position;
+        UpdateLocomotionProviders();
+    }
 
     private void OnEnable()
     {
@@ -64,8 +74,9 @@ public class ClimbingLocomotion : MonoBehaviour
     {
         bool leftEmbedded = leftPick.IsEmbedded;
         bool rightEmbedded = rightPick.IsEmbedded;
+        bool grappleAnchored = _grappleAnchor != null;
 
-        if (!leftEmbedded && !rightEmbedded)
+        if (!leftEmbedded && !rightEmbedded && !grappleAnchored)
             return;
 
         Vector3 totalDelta = Vector3.zero;
@@ -85,7 +96,14 @@ public class ClimbingLocomotion : MonoBehaviour
             activeHands++;
         }
 
-        // Average if both hands are climbing
+        if (grappleAnchored)
+        {
+            Vector3 currentPos = _grappleAnchor.position;
+            totalDelta += _grapplePrevPos - currentPos;
+            activeHands++;
+        }
+
+        // Average if multiple hands are climbing
         totalDelta /= activeHands;
         xrOrigin.position += totalDelta;
 
@@ -95,6 +113,8 @@ public class ClimbingLocomotion : MonoBehaviour
             _leftPrevPos = leftPick.ControllerTransform.position;
         if (rightEmbedded)
             _rightPrevPos = rightPick.ControllerTransform.position;
+        if (grappleAnchored)
+            _grapplePrevPos = _grappleAnchor.position;
     }
 
     private bool IsOnGround()
@@ -105,7 +125,7 @@ public class ClimbingLocomotion : MonoBehaviour
 
     private void UpdateLocomotionProviders()
     {
-        bool anyEmbedded = leftPick.IsEmbedded || rightPick.IsEmbedded;
+        bool anyEmbedded = leftPick.IsEmbedded || rightPick.IsEmbedded || _grappleAnchor != null;
         bool onGround = IsOnGround();
 
         // Disable default locomotion when climbing off the ground

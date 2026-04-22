@@ -39,6 +39,7 @@ namespace IcePEAK.Gadgets
         public bool IsZipping => _isZipping;
 
         private bool _isZipping;
+        private bool _cancelRequested;
 
         /// <summary>
         /// Begin a zip. The rig is translated so that <paramref name="pullPoint"/>
@@ -49,6 +50,8 @@ namespace IcePEAK.Gadgets
         /// Returns <c>false</c> if a zip is already running — callers should
         /// not start any rope visuals in that case.
         /// </summary>
+        public void CancelZip() => _cancelRequested = true;
+
         public bool StartZip(Vector3 anchor, Vector3 pullPoint, System.Action onArrival)
         {
             if (_isZipping) return false;
@@ -61,6 +64,7 @@ namespace IcePEAK.Gadgets
         private IEnumerator ZipRoutine(Vector3 anchor, Vector3 pullPoint, System.Action onArrival)
         {
             _isZipping = true;
+            _cancelRequested = false;
 
             SetLocomotionProviders(false);
             // Detach any currently-embedded picks so the player doesn't drag
@@ -83,7 +87,7 @@ namespace IcePEAK.Gadgets
             float totalDist = Vector3.Distance(start, end);
             float elapsed = 0f;
 
-            while (elapsed < zipDuration)
+            while (elapsed < zipDuration && !_cancelRequested)
             {
                 // Arm pick-based early-out only after the rig has traveled far
                 // enough. Without this, a pick that was already mid-swing at

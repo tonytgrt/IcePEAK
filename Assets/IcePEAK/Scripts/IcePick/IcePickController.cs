@@ -82,13 +82,10 @@ public class IcePickController : MonoBehaviour, IHoldable
         }
 
         float triggerValue = triggerAction.action.ReadValue<float>();
-        Debug.Log($"[IcePick {gameObject.name}] trigger={triggerValue:F3}, threshold={triggerReleaseThreshold}");
 
-        if (triggerValue > triggerReleaseThreshold)
-        {
-            Debug.Log($"[IcePick {gameObject.name}] Trigger pressed — calling Release()");
+        // Release when trigger is no longer held
+        if (triggerValue <= triggerReleaseThreshold)
             Release();
-        }
     }
 
     // --- Trigger Detection ---
@@ -97,6 +94,10 @@ public class IcePickController : MonoBehaviour, IHoldable
         Debug.Log($"[IcePick] Trigger hit: {other.gameObject.name}, speed={swingDetector.CurrentSpeed:F2}");
 
         if (_isEmbedded) return;
+
+        // Only embed when trigger is held
+        float triggerValue = triggerAction?.action?.ReadValue<float>() ?? 0f;
+        if (triggerValue <= triggerReleaseThreshold) return;
 
         SurfaceTag surface = other.GetComponentInParent<SurfaceTag>();
         if (surface == null) return;
