@@ -5793,6 +5793,7 @@ MonoBehaviour:
   leftPick: {fileID: 439001644}
   rightPick: {fileID: 1519350269}
   iceRespawner: {fileID: 1414130282}
+  grappleLocomotion: {fileID: 1232350264}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8

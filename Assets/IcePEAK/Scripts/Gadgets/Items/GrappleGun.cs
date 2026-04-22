@@ -33,6 +33,17 @@ namespace IcePEAK.Gadgets.Items
         [SerializeField] private Color laserValidColor = new Color(0.2f, 1f, 0.4f);
         [SerializeField] private Color laserOutOfRangeColor = new Color(1f, 0.3f, 0.3f);
 
+        [Header("Input")]
+        [Tooltip("XRI Left Interaction/Activate Value")]
+        [SerializeField] private UnityEngine.InputSystem.InputActionReference leftTriggerAction;
+        [Tooltip("XRI Right Interaction/Activate Value")]
+        [SerializeField] private UnityEngine.InputSystem.InputActionReference rightTriggerAction;
+        [SerializeField] private float triggerThreshold = 0.5f;
+
+        [Header("Climbing")]
+        [Tooltip("ClimbingLocomotion on XR Origin — registers this gun as a climbing anchor after grapple arrival.")]
+        [SerializeField] private ClimbingLocomotion climbingLocomotion;
+
         [Header("Hint")]
         [SerializeField] private string displayName = "Grapple Gun";
 
@@ -41,18 +52,62 @@ namespace IcePEAK.Gadgets.Items
         private bool _isStowed = true;
         private bool _isZipping;
         private bool _isDryFiring;
+        private bool _isClimbing;
         private GrappleLocomotion _locomotion;
         private Vector3 _zipAnchor;
+        private UnityEngine.InputSystem.InputActionReference _activeTriggerAction;
+
+        private bool TriggerHeld => (_activeTriggerAction?.action?.ReadValue<float>() ?? 0f) >= triggerThreshold;
 
         public void OnTransfer(CellKind from, CellKind to)
         {
             _isStowed = (to == CellKind.BeltSlot);
 
+            if (to == CellKind.Hand)
+                _activeTriggerAction = ResolveHandTriggerAction();
+
             if (_isStowed)
             {
                 if (laser != null) laser.enabled = false;
                 if (rope != null) rope.enabled = false;
+                ExitClimbing();
             }
+        }
+
+        private UnityEngine.InputSystem.InputActionReference ResolveHandTriggerAction()
+        {
+            // Walk up the hierarchy to find "Left" or "Right" in a controller name
+            for (var t = transform.parent; t != null; t = t.parent)
+            {
+                var n = t.name;
+                if (n.IndexOf("Left", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return leftTriggerAction;
+                if (n.IndexOf("Right", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    return rightTriggerAction;
+            }
+            return rightTriggerAction; // fallback
+        }
+
+        private void OnEnable()
+        {
+            leftTriggerAction?.action?.Enable();
+            rightTriggerAction?.action?.Enable();
+        }
+
+        private void Update()
+        {
+            if (_isStowed) return;
+
+            // Cancel mid-zip if trigger released
+            if (_isZipping && !TriggerHeld)
+            {
+                _locomotion?.CancelZip();
+                // OnArrival will still fire and handle cleanup
+            }
+
+            // Exit climbing mode if trigger released
+            if (_isClimbing && !TriggerHeld)
+                ExitClimbing();
         }
 
         public void Activate() => Fire();
@@ -166,8 +221,22 @@ namespace IcePEAK.Gadgets.Items
         {
             _isZipping = false;
             if (rope != null) rope.enabled = false;
-            // Gun stays in the hand — infinite uses for now. Update() will
-            // resume the laser preview on the next frame.
+
+            // If trigger is still held on arrival, enter climbing mode
+            if (TriggerHeld)
+                EnterClimbing();
+        }
+
+        private void EnterClimbing()
+        {
+            _isClimbing = true;
+            climbingLocomotion?.SetGrappleAnchor(transform);
+        }
+
+        private void ExitClimbing()
+        {
+            _isClimbing = false;
+            climbingLocomotion?.SetGrappleAnchor(null);
         }
 
         private bool TryResolveLocomotion()

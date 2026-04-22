@@ -604,4 +604,8 @@ MonoBehaviour:
   dryFireDuration: 0.15
   laserValidColor: {r: 0.2, g: 1, b: 0.4, a: 1}
   laserOutOfRangeColor: {r: 1, g: 0.3, b: 0.3, a: 1}
+  leftTriggerAction: {fileID: -4289430672226363583, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  rightTriggerAction: {fileID: 7904272356298805229, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  triggerThreshold: 0.5
+  climbingLocomotion: {fileID: 0}
   displayName: Grapple Gun
