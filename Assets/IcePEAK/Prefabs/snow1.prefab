@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aeeae6c940ba0e49904378a8ae38ac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakableIceDecal
-  breakTime: 4
+  breakTime: 6
   crackDecalMaterial: {fileID: 2100000, guid: 41b139082c82005458195aa336638cd2, type: 2}
   decalSize: {x: 0.5, y: 0.5, z: 1}
   sheetColumns: 2
