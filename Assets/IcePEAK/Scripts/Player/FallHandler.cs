@@ -21,6 +21,8 @@ namespace IcePEAK.Player
         [SerializeField] private IcePickController rightPick;
         [Tooltip("Optional. If assigned, all breakable ice in the scene is restored on respawn.")]
         [SerializeField] private IceRespawner iceRespawner;
+        [Tooltip("Optional. If assigned, respawn is suppressed while grappling is active.")]
+        [SerializeField] private IcePEAK.Gadgets.GrappleLocomotion grappleLocomotion;
 
         [Header("Ground Detection")]
         [SerializeField] private LayerMask groundLayer;
@@ -60,9 +62,10 @@ namespace IcePEAK.Player
 
             bool anyEmbedded = (leftPick != null && leftPick.IsEmbedded)
                             || (rightPick != null && rightPick.IsEmbedded);
+            bool isZipping = grappleLocomotion != null && grappleLocomotion.IsZipping;
             bool grounded = IsOnGround();
 
-            if (anyEmbedded || grounded)
+            if (anyEmbedded || isZipping || grounded)
             {
                 _airborneTime = 0f;
                 return;
