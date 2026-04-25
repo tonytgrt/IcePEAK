@@ -45,6 +45,10 @@ namespace IcePEAK.Gadgets
 
             if (handItem == null && slotItem == null) return null;
 
+            // Slot-locked gadgets supply their own hint and don't participate in swap/draw/stow.
+            if (slotItem != null && slotItem.TryGetComponent<IFixedInSlot>(out var fixedItem))
+                return fixedItem.HintText;
+
             string slotName = GetDisplayName(slotItem);
             string handName = GetDisplayName(handItem);
 

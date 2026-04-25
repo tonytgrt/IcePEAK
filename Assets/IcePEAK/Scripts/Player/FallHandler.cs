@@ -23,6 +23,8 @@ namespace IcePEAK.Player
         [SerializeField] private IceRespawner iceRespawner;
         [Tooltip("Optional. If assigned, respawn is suppressed while grappling is active.")]
         [SerializeField] private IcePEAK.Gadgets.GrappleLocomotion grappleLocomotion;
+        [Tooltip("Optional. If assigned, respawn is suppressed while drone peek is active.")]
+        [SerializeField] private IcePEAK.Gadgets.DroneController droneController;
 
         [Header("Ground Detection")]
         [SerializeField] private LayerMask groundLayer;
@@ -63,9 +65,10 @@ namespace IcePEAK.Player
             bool anyEmbedded = (leftPick != null && leftPick.IsEmbedded)
                             || (rightPick != null && rightPick.IsEmbedded);
             bool isZipping = grappleLocomotion != null && grappleLocomotion.IsZipping;
+            bool isPeeking = droneController != null && droneController.IsPeeking;
             bool grounded = IsOnGround();
 
-            if (anyEmbedded || isZipping || grounded)
+            if (anyEmbedded || isZipping || isPeeking || grounded)
             {
                 _airborneTime = 0f;
                 return;
