@@ -90,6 +90,11 @@ namespace IcePEAK.Gadgets
 
             if (handItem == null && slotItem == null) return;
 
+            // Slot-locked gadgets (e.g. the drone) opt out of swap/draw/stow.
+            // Grip-press here is left unclaimed so DroneController can use it.
+            if (slotItem != null && slotItem.GetComponent<IFixedInSlot>() != null)
+                return;
+
             handCell.Take();
             slot.Take();
 
