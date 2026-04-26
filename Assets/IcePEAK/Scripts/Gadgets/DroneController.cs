@@ -5,10 +5,12 @@ using IcePEAK.Player;
 namespace IcePEAK.Gadgets
 {
     /// <summary>
-    /// Rig-level peek controller for the slot-locked drone gadget. While the
-    /// player's hand hovers the drone slot AND grip is held, the XR Origin is
-    /// snapped to a designer-placed overview anchor; releasing grip (or moving
-    /// the hand off the slot) restores the original rig pose.
+    /// Rig-level peek controller for the slot-locked drone gadget. To begin
+    /// the peek, the player hovers their hand over the drone slot and presses
+    /// grip; the XR Origin snaps to a designer-placed overview anchor. Once
+    /// peeking, the snap is held until grip is released — hover is intentionally
+    /// not re-checked, so the player can freely turn their head to look around
+    /// without head-yaw moving the slot out from under their (stationary) hand.
     ///
     /// Grip-press at the drone slot is rejected by <see cref="HandInteractionController"/>
     /// (because the held item carries <see cref="IFixedInSlot"/>), so the press
@@ -46,6 +48,12 @@ namespace IcePEAK.Gadgets
         [SerializeField] private ScreenFader fader;
         [SerializeField] private float peekFadeDuration = 0.1f;
 
+        [Tooltip("Optional. If set, this GameObject is positioned at the player's saved rig pose " +
+                 "and activated during peek so the player can see where they actually are on the " +
+                 "route from the drone overview. Should be an empty parent containing the visible " +
+                 "marker (e.g., a pillar of light); origin at the parent represents the rig root.")]
+        [SerializeField] private GameObject playerMarker;
+
         public bool IsPeeking => _isPeeking;
 
         private bool _isPeeking;
@@ -64,9 +72,8 @@ namespace IcePEAK.Gadgets
         {
             if (_isPeeking)
             {
-                bool stillHovering = _ownerHand != null && _ownerHand.CurrentHoveredSlot == droneSlot;
                 bool stillGripping = (_ownerGrip?.action?.ReadValue<float>() ?? 0f) >= gripThreshold;
-                if (!stillHovering || !stillGripping)
+                if (!stillGripping)
                     EndPeek();
                 return;
             }
@@ -110,6 +117,12 @@ namespace IcePEAK.Gadgets
             xrOrigin.position = droneViewAnchor.position;
             xrOrigin.rotation = droneViewAnchor.rotation;
 
+            if (playerMarker != null)
+            {
+                playerMarker.transform.SetPositionAndRotation(_savedOriginPos, _savedOriginRot);
+                playerMarker.SetActive(true);
+            }
+
             SetSuspended(true);
 
             if (fader != null && peekFadeDuration > 0f)
@@ -124,6 +137,8 @@ namespace IcePEAK.Gadgets
 
             xrOrigin.position = _savedOriginPos;
             xrOrigin.rotation = _savedOriginRot;
+
+            if (playerMarker != null) playerMarker.SetActive(false);
 
             SetSuspended(false);
 

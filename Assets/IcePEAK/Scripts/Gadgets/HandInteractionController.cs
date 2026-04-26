@@ -38,11 +38,32 @@ namespace IcePEAK.Gadgets
         {
             if (handCell == null || belt == null) return;
 
-            belt.TryGetNearestSlot(handCell.Anchor.position, out var nearest);
-            if (nearest != CurrentHoveredSlot)
+            belt.TryGetNearestSlot(handCell.Anchor.position, out var rawNearest);
+
+            // Hysteresis: keep the current hovered slot until a competitor is meaningfully
+            // closer. Filters the slot decision only — the hand's tracked position itself
+            // is never smoothed, so the hand stays 1:1 with the controller.
+            BeltSlot effectiveNearest = rawNearest;
+            if (CurrentHoveredSlot != null
+                && rawNearest != null
+                && rawNearest != CurrentHoveredSlot)
+            {
+                Vector3 handPos = handCell.Anchor.position;
+                float currentDist    = Vector3.Distance(handPos, CurrentHoveredSlot.Anchor.position);
+                float competitorDist = Vector3.Distance(handPos, rawNearest.Anchor.position);
+
+                // Once the hand has clearly left the current slot's zone, drop the bias.
+                if (currentDist <= belt.ProximityRadius
+                    && competitorDist > currentDist - belt.StickyBias)
+                {
+                    effectiveNearest = CurrentHoveredSlot;
+                }
+            }
+
+            if (effectiveNearest != CurrentHoveredSlot)
             {
                 if (CurrentHoveredSlot != null) CurrentHoveredSlot.SetHighlighted(false, handCell);
-                CurrentHoveredSlot = nearest;
+                CurrentHoveredSlot = effectiveNearest;
                 if (CurrentHoveredSlot != null) CurrentHoveredSlot.SetHighlighted(true, handCell);
             }
 
