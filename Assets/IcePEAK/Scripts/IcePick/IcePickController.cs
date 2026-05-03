@@ -31,8 +31,10 @@ public class IcePickController : MonoBehaviour, IHoldable
     [Header("Input")]
     [Tooltip("Trigger (activate) action for this hand — use XRI > Activate Value")]
     [SerializeField] private InputActionReference triggerAction;
-    [Tooltip("Trigger value above which the pick releases from the surface")]
-    [SerializeField] private float triggerReleaseThreshold = 0.5f;
+    [Tooltip("Trigger value above which the pick embeds / below which it releases")]
+    [SerializeField] private float triggerThreshold = 0.5f;
+    [Tooltip("Seconds after release before the pick can re-embed in the same ice")]
+    [SerializeField] private float embedCooldownDuration = 0.15f;
 
     [Header("Hint")]
     [SerializeField] private string displayName = "Ice Pick";
@@ -56,6 +58,10 @@ public class IcePickController : MonoBehaviour, IHoldable
     private Transform _controllerParent;   // cached controller transform
     private Vector3 _localPosInParent;     // original local position
     private Quaternion _localRotInParent;   // original local rotation
+
+    private bool _insideIce;               // tip is currently overlapping an ice collider
+    private SurfaceTag _pendingIceSurface; // the ice surface the tip is inside
+    private float _embedCooldown;          // prevents immediate re-embed after release
 
     private void Awake()
     {
@@ -94,42 +100,62 @@ public class IcePickController : MonoBehaviour, IHoldable
 
     private void Update()
     {
-        if (!_isEmbedded) return;
+        if (_embedCooldown > 0f)
+            _embedCooldown -= Time.deltaTime;
 
         if (triggerAction == null || triggerAction.action == null)
         {
-            Debug.LogWarning($"[IcePick {gameObject.name}] Embedded but triggerAction is null — cannot read input!");
+            if (_isEmbedded)
+                Debug.LogWarning($"[IcePick {gameObject.name}] Embedded but triggerAction is null — cannot read input!");
             return;
         }
 
         float triggerValue = triggerAction.action.ReadValue<float>();
 
-        // Release when trigger is no longer held
-        if (triggerValue <= triggerReleaseThreshold)
-            Release();
+        if (_isEmbedded)
+        {
+            // Release immediately when trigger is let go
+            if (triggerValue < triggerThreshold)
+                Release();
+        }
+        else if (_insideIce && _pendingIceSurface != null && _embedCooldown <= 0f)
+        {
+            // Embed while tip is inside ice and trigger is held
+            if (triggerValue >= triggerThreshold)
+                Embed(_pendingIceSurface);
+        }
     }
 
     // --- Trigger Detection ---
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"[IcePick] Trigger hit: {other.gameObject.name}, speed={swingDetector.CurrentSpeed:F2}");
-
         if (_isEmbedded) return;
-
-        // Only embed when trigger is held
-        float triggerValue = triggerAction?.action?.ReadValue<float>() ?? 0f;
-        if (triggerValue <= triggerReleaseThreshold) return;
 
         SurfaceTag surface = other.GetComponentInParent<SurfaceTag>();
         if (surface == null) return;
 
-        if (surface.Type == SurfaceType.Ice && swingDetector.IsSwingFastEnough)
+        if (surface.Type == SurfaceType.Ice)
         {
-            Embed(surface);
+            _insideIce = true;
+            _pendingIceSurface = surface;
+            Debug.Log($"[IcePick {gameObject.name}] Tip entered ice: {other.gameObject.name}");
         }
         else
         {
             Bounce(surface.Type);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (_isEmbedded) return;
+
+        SurfaceTag surface = other.GetComponentInParent<SurfaceTag>();
+        if (surface != null && surface.Type == SurfaceType.Ice && surface == _pendingIceSurface)
+        {
+            _insideIce = false;
+            _pendingIceSurface = null;
+            Debug.Log($"[IcePick {gameObject.name}] Tip left ice: {other.gameObject.name}");
         }
     }
 
@@ -180,6 +206,9 @@ public class IcePickController : MonoBehaviour, IHoldable
         if (!_isEmbedded) return;
 
         _isEmbedded = false;
+        _insideIce = false;
+        _pendingIceSurface = null;
+        _embedCooldown = embedCooldownDuration;
 
         // Re-attach to controller
         transform.SetParent(_controllerParent);
