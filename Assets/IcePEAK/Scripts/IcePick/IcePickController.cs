@@ -12,8 +12,12 @@ public class IcePickController : MonoBehaviour, IHoldable
     [SerializeField] private Transform tipTransform;
     [Tooltip("Trigger collider on the tip — disabled while stowed so it doesn't embed in ice.")]
     [SerializeField] private Collider tipCollider;
+    [Header("Audio")]
+    [Tooltip("Clip played when the pick embeds in ice. Auto-loaded from Resources/breakIce if left empty.")]
     [SerializeField] private AudioClip embedSound;
+    [Tooltip("Clip played when the pick bounces off rock.")]
     [SerializeField] private AudioClip bounceSound;
+    [Tooltip("AudioSource on this prefab to play through. Add an Audio Source component to the prefab and drag it here.")]
     [SerializeField] private AudioSource audioSource;
 
     [Header("Embed Settings")]

@@ -41,6 +41,8 @@ public class FallingRockSpawner : MonoBehaviour
     [Header("On Hit")]
     [Tooltip("Optional VFX/SFX prefab spawned at the contact point.")]
     [SerializeField] private GameObject hitEffectPrefab;
+    [Tooltip("Where to respawn the player if no Checkpoint has been reached yet.")]
+    [SerializeField] private Transform spawnPoint;
 
     [Header("Gizmo")]
     [SerializeField] private Color gizmoColor = new Color(1f, 0.85f, 0.1f, 0.5f);
@@ -72,7 +74,6 @@ public class FallingRockSpawner : MonoBehaviour
             Random.Range(-spawnAreaSize.z, spawnAreaSize.z) * 0.5f);
 
         GameObject rock = Instantiate(prefab, transform.TransformPoint(localPos), Random.rotation);
-
         rock.transform.localScale *= Random.Range(scaleRange.x, scaleRange.y);
 
         if (!rock.TryGetComponent<Rigidbody>(out var rb))
@@ -87,9 +88,9 @@ public class FallingRockSpawner : MonoBehaviour
             Random.Range(-horizontalJitter, horizontalJitter));
         rb.angularVelocity = Random.insideUnitSphere * 2f;
 
-        // Attach hit detector, passing spawner settings by value
+        // RockHitDetector is a top-level class — AddComponent works correctly
         var detector = rock.AddComponent<RockHitDetector>();
-        detector.Init(minImpactSpeed, hapticAmplitude, hapticDuration, hitEffectPrefab);
+        detector.Init(minImpactSpeed, hapticAmplitude, hapticDuration, hitEffectPrefab, spawnPoint);
 
         Destroy(rock, rockLifetime);
     }
@@ -101,69 +102,86 @@ public class FallingRockSpawner : MonoBehaviour
         Gizmos.DrawWireCube(Vector3.zero, spawnAreaSize);
         Gizmos.DrawLine(Vector3.zero, Vector3.down * 5f);
     }
+}
 
-    // -------------------------------------------------------------------------
-    // Inner component — added at runtime to each rock, never shown in Inspector
-    // -------------------------------------------------------------------------
-    private class RockHitDetector : MonoBehaviour
+/// <summary>
+/// Added at runtime to each spawned rock by FallingRockSpawner.
+/// Detects collision with the player and triggers a checkpoint respawn.
+/// Must be a top-level class — Unity cannot AddComponent on nested types.
+/// </summary>
+public class RockHitDetector : MonoBehaviour
+{
+    private float _minSpeed;
+    private float _hapticAmp;
+    private float _hapticDur;
+    private GameObject _hitEffect;
+    private Transform _spawnPoint;
+    private bool _hasHit;
+
+    public void Init(float minSpeed, float amp, float dur, GameObject effect, Transform spawnPoint)
     {
-        private float _minSpeed;
-        private float _hapticAmp;
-        private float _hapticDur;
-        private GameObject _hitEffect;
-        private bool _hasHit;
+        _minSpeed   = minSpeed;
+        _hapticAmp  = amp;
+        _hapticDur  = dur;
+        _hitEffect  = effect;
+        _spawnPoint = spawnPoint;
+    }
 
-        public void Init(float minSpeed, float amp, float dur, GameObject effect)
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (_hasHit) return;
+        if (!collision.gameObject.CompareTag("Player")) return;
+        if (collision.relativeVelocity.magnitude < _minSpeed) return;
+
+        _hasHit = true;
+
+        if (_hitEffect != null)
         {
-            _minSpeed   = minSpeed;
-            _hapticAmp  = amp;
-            _hapticDur  = dur;
-            _hitEffect  = effect;
+            var c = collision.GetContact(0);
+            Instantiate(_hitEffect, c.point, Quaternion.LookRotation(c.normal));
         }
 
-        private void OnCollisionEnter(Collision collision)
+        SendHaptics();
+        RespawnPlayer(collision.transform);
+        Destroy(gameObject);
+    }
+
+    private void RespawnPlayer(Transform hitTransform)
+    {
+        Vector3 destination;
+        if (Checkpoint.HasCheckpoint)
         {
-            if (_hasHit) return;
-            if (!collision.gameObject.CompareTag("Player")) return;
-            if (collision.relativeVelocity.magnitude < _minSpeed) return;
-
-            _hasHit = true;
-
-            if (_hitEffect != null)
-            {
-                var c = collision.GetContact(0);
-                Instantiate(_hitEffect, c.point, Quaternion.LookRotation(c.normal));
-            }
-
-            SendHaptics();
-            RespawnPlayer(collision.transform);
-            Destroy(gameObject);
+            destination = Checkpoint.LastPosition;
+        }
+        else if (_spawnPoint != null)
+        {
+            destination = _spawnPoint.position;
+        }
+        else
+        {
+            Debug.LogWarning("[RockHitDetector] No checkpoint and no spawn point assigned — respawn skipped.");
+            return;
         }
 
-        private void RespawnPlayer(Transform player)
-        {
-            if (!Checkpoint.HasCheckpoint)
-            {
-                Debug.LogWarning("[RockHitDetector] No checkpoint reached yet.");
-                return;
-            }
+        // Walk up to XR Origin root in case the collider is on a child object
+        Transform xrOrigin = hitTransform.root;
 
-            foreach (var pick in FindObjectsByType<IcePickController>(FindObjectsSortMode.None))
-                if (pick.IsEmbedded) pick.Release();
+        foreach (var pick in FindObjectsByType<IcePickController>(FindObjectsSortMode.None))
+            if (pick.IsEmbedded) pick.Release();
 
-            player.position = Checkpoint.LastPosition;
-        }
+        xrOrigin.position = destination;
+        Debug.Log($"[RockHitDetector] Player respawned at {destination}");
+    }
 
-        private void SendHaptics()
-        {
-            var devices = new List<InputDevice>();
-            InputDevices.GetDevicesWithCharacteristics(
-                InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, devices);
-            InputDevices.GetDevicesWithCharacteristics(
-                InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, devices);
+    private void SendHaptics()
+    {
+        var devices = new List<InputDevice>();
+        InputDevices.GetDevicesWithCharacteristics(
+            InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, devices);
+        InputDevices.GetDevicesWithCharacteristics(
+            InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, devices);
 
-            foreach (var d in devices)
-                d.SendHapticImpulse(0, _hapticAmp, _hapticDur);
-        }
+        foreach (var d in devices)
+            d.SendHapticImpulse(0, _hapticAmp, _hapticDur);
     }
 }
