@@ -51,6 +51,14 @@ namespace IcePEAK.Gadgets
 
         public bool IsZipping => _isZipping;
 
+        /// <summary>
+        /// Maximum world-space distance the rig can travel in a single zip,
+        /// derived from <see cref="zipSpeed"/> and <see cref="maxTravelDuration"/>.
+        /// Callers (e.g. <c>GrappleGun</c>) use this for raycast / aim-preview gating
+        /// so the gun can't fire at a target it can't actually reach.
+        /// </summary>
+        public float MaxZipDistance => zipSpeed * maxTravelDuration;
+
         private bool _isZipping;
         private bool _cancelRequested;
 

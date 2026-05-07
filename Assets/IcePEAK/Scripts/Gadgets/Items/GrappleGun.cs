@@ -24,8 +24,6 @@ namespace IcePEAK.Gadgets.Items
         [SerializeField] private Transform barrelTip;
 
         [Header("Raycast")]
-        [Tooltip("Maximum grapple distance (meters).")]
-        [SerializeField] private float maxRange = 40f;
         [Tooltip("Layers the grapple raycast hits. Leave as Everything unless specific layers need to be excluded.")]
         [SerializeField] private LayerMask hitMask = ~0;
 
@@ -145,7 +143,7 @@ namespace IcePEAK.Gadgets.Items
             }
 
             if (Physics.Raycast(barrelTip.position, barrelTip.forward, out RaycastHit hit,
-                                maxRange, hitMask, QueryTriggerInteraction.Ignore)
+                                _locomotion.MaxZipDistance, hitMask, QueryTriggerInteraction.Ignore)
                 && hit.collider.GetComponentInParent<SurfaceTag>() != null)
             {
                 _zipAnchor = hit.point;
@@ -187,6 +185,14 @@ namespace IcePEAK.Gadgets.Items
                 laser.enabled = false;
                 return;
             }
+
+            if (!TryResolveLocomotion())
+            {
+                laser.enabled = false;
+                return;
+            }
+
+            float maxRange = _locomotion.MaxZipDistance;
 
             Vector3 origin = barrelTip.position;
             Vector3 dir = barrelTip.forward;

@@ -706,7 +706,6 @@ MonoBehaviour:
   laser: {fileID: 6949838512260696446}
   rope: {fileID: 6126550897021051889}
   barrelTip: {fileID: 7497390196660575971}
-  maxRange: 40
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
