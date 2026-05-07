@@ -158,6 +158,7 @@ namespace IcePEAK.Gadgets
                 if (climbingLocomotion != null && climbAnchor != null)
                     climbingLocomotion.SetGrappleAnchor(climbAnchor);
 
+                // Hang is a hard timer per spec — intentionally does not check _cancelRequested.
                 float hangElapsed = 0f;
                 while (hangElapsed < wallHangDuration)
                 {

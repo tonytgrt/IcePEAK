@@ -5138,7 +5138,6 @@ MonoBehaviour:
   - {fileID: 1028671019}
   - {fileID: 1028671018}
   - {fileID: 1028671011}
-  - {fileID: 1028671025}
   zipSpeed: 5
   maxTravelDuration: 2
   wallHangDuration: 2
