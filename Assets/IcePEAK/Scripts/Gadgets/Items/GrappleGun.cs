@@ -7,7 +7,7 @@ namespace IcePEAK.Gadgets.Items
     /// <summary>
     /// Grapple gun. Held in a hand, it projects a diegetic laser forward
     /// from the barrel while idle — green when the laser would hit a
-    /// <see cref="SurfaceTag"/> collider within <see cref="maxRange"/>,
+    /// <see cref="SurfaceTag"/> collider within <see cref="GrappleLocomotion.MaxZipDistance"/>,
     /// red otherwise. Activate (trigger) raycasts from the barrel:
     /// on hit, dispatches to <see cref="GrappleLocomotion"/> to zip the
     /// rig to the surface; on miss, plays a brief red dry-fire flash.
