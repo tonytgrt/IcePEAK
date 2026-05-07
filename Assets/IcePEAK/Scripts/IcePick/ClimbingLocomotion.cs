@@ -6,6 +6,8 @@ public class ClimbingLocomotion : MonoBehaviour
     [SerializeField] private Transform xrOrigin;
     [SerializeField] private IcePickController leftPick;
     [SerializeField] private IcePickController rightPick;
+    [Tooltip("Optional. If assigned, this component defers provider state to GrappleLocomotion while a zip is in flight, so a pick-release event during the zip won't re-enable gravity.")]
+    [SerializeField] private IcePEAK.Gadgets.GrappleLocomotion grappleLocomotion;
 
     [Header("Ground Detection")]
     [Tooltip("Layer mask for surfaces the player can stand on")]
@@ -125,6 +127,11 @@ public class ClimbingLocomotion : MonoBehaviour
 
     private void UpdateLocomotionProviders()
     {
+        // During a zip, GrappleLocomotion owns provider state — its
+        // SetLocomotionProviders(false) call must not be undone by a
+        // pick-release event firing partway through ZipRoutine.
+        if (grappleLocomotion != null && grappleLocomotion.IsZipping) return;
+
         bool anyEmbedded = leftPick.IsEmbedded || rightPick.IsEmbedded || _grappleAnchor != null;
         bool onGround = IsOnGround();
 

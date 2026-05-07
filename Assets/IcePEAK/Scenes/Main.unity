@@ -5158,6 +5158,7 @@ MonoBehaviour:
   xrOrigin: {fileID: 1028671023}
   leftPick: {fileID: 1272378699}
   rightPick: {fileID: 1940498477}
+  grappleLocomotion: {fileID: 1028671024}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
