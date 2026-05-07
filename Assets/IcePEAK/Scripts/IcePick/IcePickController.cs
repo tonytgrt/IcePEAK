@@ -205,7 +205,7 @@ public class IcePickController : MonoBehaviour, IHoldable
     {
         SetStowed(to == CellKind.BeltSlot);
 
-        // PlaceInto() in HandInteractionController resets the item's local pose to
+        // BeltSwap.PlaceInto() resets the item's local pose to
         // (0, identity). The pick needs its design-time offset (~5cm down, ~13cm
         // back, ~27° pitch) to sit correctly in the hand — restore the Awake cache.
         if (to == CellKind.Hand)
