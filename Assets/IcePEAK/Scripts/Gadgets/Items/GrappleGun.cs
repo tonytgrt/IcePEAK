@@ -102,17 +102,16 @@ namespace IcePEAK.Gadgets.Items
                 var n = t.name;
                 if (n.IndexOf("Left", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    // Prefer Inspector-assigned ref; fall back to the component on the controller.
-                    _activeHaptics = leftHaptics != null ? leftHaptics : t.GetComponent<HapticImpulsePlayer>();
+                    _activeHaptics = leftHaptics != null ? leftHaptics : t.GetComponentInParent<HapticImpulsePlayer>();
                     return leftTriggerAction;
                 }
                 if (n.IndexOf("Right", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    _activeHaptics = rightHaptics != null ? rightHaptics : t.GetComponent<HapticImpulsePlayer>();
+                    _activeHaptics = rightHaptics != null ? rightHaptics : t.GetComponentInParent<HapticImpulsePlayer>();
                     return rightTriggerAction;
                 }
             }
-            _activeHaptics = rightHaptics;
+            _activeHaptics = rightHaptics != null ? rightHaptics : GetComponentInParent<HapticImpulsePlayer>();
             return rightTriggerAction;
         }
 
