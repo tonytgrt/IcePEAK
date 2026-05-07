@@ -5,14 +5,23 @@ namespace IcePEAK.Gadgets
 {
     /// <summary>
     /// Rig-level zipline locomotion. Lives on the XR Origin alongside
-    /// <c>ClimbingLocomotion</c>. Moves the XR Origin from its current
-    /// position to a surface anchor over a fixed duration, offsetting along
-    /// the surface normal so the player doesn't clip the hit geometry.
+    /// <c>ClimbingLocomotion</c>. Owns the full zip lifecycle:
+    ///   1. Travel phase — moves the rig at constant speed toward a surface
+    ///      anchor. Caps at <see cref="maxTravelDuration"/>.
+    ///   2. Arrival phase — once travel succeeds, fires <c>onArrived</c>
+    ///      (gun does its auto-swap), then anchors the rig via
+    ///      <c>ClimbingLocomotion.SetGrappleAnchor</c> for a fixed
+    ///      <see cref="wallHangDuration"/>.
+    ///   3. Cleanup — re-enables locomotion providers, fires <c>onComplete</c>.
     ///
     /// While the zip is running:
     ///   - Default locomotion providers (move, turn, teleport) are disabled.
-    ///   - Both ice picks are released and stowed so they can't interact.
+    ///   - Both ice picks are released so they can't drag through the old anchor.
     ///   - Additional <see cref="StartZip"/> calls are rejected.
+    ///
+    /// The arrival branch is skipped on cancel, on travel timeout, and on
+    /// early-embed (a pick that swung into the arriving surface) — the player
+    /// is already anchored via the pick in that last case.
     /// </summary>
     public class GrappleLocomotion : MonoBehaviour
     {
@@ -20,20 +29,24 @@ namespace IcePEAK.Gadgets
         [SerializeField] private Transform xrOrigin;
         [SerializeField] private IcePickController leftPick;
         [SerializeField] private IcePickController rightPick;
+        [Tooltip("ClimbingLocomotion on XR Origin — used to anchor the rig during the wall-hang.")]
+        [SerializeField] private ClimbingLocomotion climbingLocomotion;
 
         [Header("Default Locomotion Providers")]
-        [Tooltip("Components to disable while zipping — move, turn, teleport, etc. Re-enabled on arrival.")]
+        [Tooltip("Components to disable while zipping — move, turn, teleport, etc. Re-enabled on completion.")]
         [SerializeField] private MonoBehaviour[] locomotionProviders;
 
         [Header("Tunables")]
-        [Tooltip("Constant travel speed during the zip (m/s). The rig moves toward the anchor at this speed regardless of rope length, so long and short grapples feel the same.")]
+        [Tooltip("Constant travel speed during the zip (m/s).")]
         [SerializeField] private float zipSpeed = 20f;
-        [Tooltip("Total seconds the grappled state lasts. The rig travels to the landing at zipSpeed, then hangs there until this timer expires (or until an ice pick embeds).")]
-        [SerializeField] private float zipDuration = 2.0f;
-        [Tooltip("Meters to stop the gun's nozzle short of the surface along the rope line. Keep small so the off-hand can reach the wall with an ice pick.")]
+        [Tooltip("Hard cap on travel-phase duration. If the rig hasn't arrived in this many seconds, the zip ends without a wall-hang.")]
+        [SerializeField] private float maxTravelDuration = 2.0f;
+        [Tooltip("Fixed seconds the rig hangs at the wall after a successful arrival, independent of how long travel took.")]
+        [SerializeField] private float wallHangDuration = 2.0f;
+        [Tooltip("Meters to stop the gun's nozzle short of the surface along the rope line.")]
         [SerializeField] private float surfaceOffset = 0.1f;
         [Range(0f, 1f)]
-        [Tooltip("Fraction of the rope distance that must be traveled before an ice pick embed is allowed to end the zip early. Guards against a pick that was already swinging at fire time clipping a nearby wall and canceling the zip immediately.")]
+        [Tooltip("Fraction of the rope distance that must be traveled before an ice pick embed is allowed to end the zip early.")]
         [SerializeField] private float embedArmFraction = 0.8f;
 
         public bool IsZipping => _isZipping;
@@ -41,27 +54,31 @@ namespace IcePEAK.Gadgets
         private bool _isZipping;
         private bool _cancelRequested;
 
+        public void CancelZip() => _cancelRequested = true;
+
         /// <summary>
         /// Begin a zip. The rig is translated so that <paramref name="pullPoint"/>
         /// (typically the gun's barrel tip at fire time) ends up <c>surfaceOffset</c>
-        /// meters short of <paramref name="anchor"/> along the rope line. This
-        /// keeps the gun on the aim axis regardless of surface orientation, so
-        /// an angled wall doesn't shove the player sideways.
-        /// Returns <c>false</c> if a zip is already running — callers should
-        /// not start any rope visuals in that case.
+        /// meters short of <paramref name="anchor"/> along the rope line.
         /// </summary>
-        public void CancelZip() => _cancelRequested = true;
-
-        public bool StartZip(Vector3 anchor, Vector3 pullPoint, System.Action onArrival)
+        /// <param name="anchor">World-space target point.</param>
+        /// <param name="pullPoint">Gun-tip position snapshot used for offset math.</param>
+        /// <param name="climbAnchor">Transform passed to ClimbingLocomotion during the wall-hang. Must be parented to the rig so its delta cancels rig motion (matches existing climbing-anchor semantics).</param>
+        /// <param name="onArrived">Fires once at the start of the arrival phase, before the wall-hang begins. Skipped on cancel/timeout/early-embed.</param>
+        /// <param name="onComplete">Fires once at the end of the zip, regardless of how it ended.</param>
+        /// <returns><c>false</c> if a zip is already running — callers should not start any rope visuals in that case.</returns>
+        public bool StartZip(Vector3 anchor, Vector3 pullPoint, Transform climbAnchor,
+                             System.Action onArrived, System.Action onComplete)
         {
             if (_isZipping) return false;
             if (xrOrigin == null) return false;
 
-            StartCoroutine(ZipRoutine(anchor, pullPoint, onArrival));
+            StartCoroutine(ZipRoutine(anchor, pullPoint, climbAnchor, onArrived, onComplete));
             return true;
         }
 
-        private IEnumerator ZipRoutine(Vector3 anchor, Vector3 pullPoint, System.Action onArrival)
+        private IEnumerator ZipRoutine(Vector3 anchor, Vector3 pullPoint, Transform climbAnchor,
+                                       System.Action onArrived, System.Action onComplete)
         {
             _isZipping = true;
             _cancelRequested = false;
@@ -74,25 +91,22 @@ namespace IcePEAK.Gadgets
             if (rightPick != null) rightPick.Release();
 
             Vector3 start = xrOrigin.position;
-            // Offset back along the rope line (anchor → pullPoint) so the nozzle
-            // lands a fixed distance short of the surface along the aim axis,
-            // regardless of surface orientation. This keeps angled walls from
-            // pushing the landing point far off to the side.
+            // Offset back along the rope line so the nozzle lands a fixed
+            // distance short of the surface along the aim axis, regardless of
+            // surface orientation.
             Vector3 ropeDir = anchor - pullPoint;
             Vector3 nozzleLanding = ropeDir.sqrMagnitude > 1e-6f
                 ? anchor - ropeDir.normalized * surfaceOffset
                 : anchor;
-            // Translate xrOrigin by the delta that brings pullPoint to nozzleLanding.
             Vector3 end = start + (nozzleLanding - pullPoint);
             float totalDist = Vector3.Distance(start, end);
-            float elapsed = 0f;
 
-            while (elapsed < zipDuration && !_cancelRequested)
+            // --- Travel phase ---
+            float travelElapsed = 0f;
+            bool arrived = false;
+            bool earlyEmbed = false;
+            while (travelElapsed < maxTravelDuration && !_cancelRequested)
             {
-                // Arm pick-based early-out only after the rig has traveled far
-                // enough. Without this, a pick that was already mid-swing at
-                // fire time can clip a nearby wall and cancel the zip before
-                // the player has gone anywhere.
                 float progress = totalDist > 1e-4f
                     ? Vector3.Distance(start, xrOrigin.position) / totalDist
                     : 1f;
@@ -103,45 +117,62 @@ namespace IcePEAK.Gadgets
 
                 if (embedArmed && (leftEmbedded || rightEmbedded))
                 {
-                    // End the zip the instant the off-hand swings a pick into
-                    // the arriving surface — the player is now anchored, so
-                    // handing control to ClimbingLocomotion mid-flight feels
-                    // more responsive than waiting for the zip timer.
+                    // Off-hand swung into the arriving wall — skip the hang.
+                    earlyEmbed = true;
                     break;
                 }
 
                 if (!embedArmed)
                 {
                     // Premature embed during the lockout — release so the pick
-                    // doesn't stay stuck in a wall we'll fly past and then
-                    // yank us backward once ClimbingLocomotion re-enables.
+                    // doesn't stay stuck in a wall we'll fly past.
                     if (leftEmbedded) leftPick.Release();
                     if (rightEmbedded) rightPick.Release();
                 }
 
-                // Constant-speed travel toward the landing. Once we arrive, the
-                // rig hangs at the anchor for the remaining duration so the
-                // off-hand still has time to land a swing even on short ropes.
+                // Constant-speed travel toward the landing.
                 Vector3 toEnd = end - xrOrigin.position;
                 float stepDist = zipSpeed * Time.deltaTime;
                 if (toEnd.sqrMagnitude <= stepDist * stepDist)
                 {
                     xrOrigin.position = end;
+                    arrived = true;
+                    break;
                 }
                 else
                 {
                     xrOrigin.position += toEnd.normalized * stepDist;
                 }
 
-                elapsed += Time.deltaTime;
+                travelElapsed += Time.deltaTime;
                 yield return null;
             }
 
+            // --- Arrival branch ---
+            // Only run hang phase if travel succeeded — not on cancel, not on
+            // early-embed (player's already anchored via pick), not on timeout.
+            if (arrived && !_cancelRequested && !earlyEmbed)
+            {
+                onArrived?.Invoke();
+
+                if (climbingLocomotion != null && climbAnchor != null)
+                    climbingLocomotion.SetGrappleAnchor(climbAnchor);
+
+                float hangElapsed = 0f;
+                while (hangElapsed < wallHangDuration)
+                {
+                    hangElapsed += Time.deltaTime;
+                    yield return null;
+                }
+
+                if (climbingLocomotion != null)
+                    climbingLocomotion.SetGrappleAnchor(null);
+            }
+
+            // --- Cleanup ---
             SetLocomotionProviders(true);
-
             _isZipping = false;
-
-            onArrival?.Invoke();
+            onComplete?.Invoke();
         }
 
         private void SetLocomotionProviders(bool enabled)

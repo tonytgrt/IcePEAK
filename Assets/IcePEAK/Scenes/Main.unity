@@ -5130,6 +5130,7 @@ MonoBehaviour:
   xrOrigin: {fileID: 1028671023}
   leftPick: {fileID: 1272378699}
   rightPick: {fileID: 1940498477}
+  climbingLocomotion: {fileID: 1028671025}
   locomotionProviders:
   - {fileID: 1028671022}
   - {fileID: 1028671021}
@@ -5139,7 +5140,8 @@ MonoBehaviour:
   - {fileID: 1028671011}
   - {fileID: 1028671025}
   zipSpeed: 5
-  zipDuration: 2
+  maxTravelDuration: 2
+  wallHangDuration: 2
   surfaceOffset: 0.1
   embedArmFraction: 0.8
 --- !u!114 &1028671025

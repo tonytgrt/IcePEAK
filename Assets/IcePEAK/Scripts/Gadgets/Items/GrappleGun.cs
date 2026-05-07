@@ -9,8 +9,11 @@ namespace IcePEAK.Gadgets.Items
     /// <see cref="SurfaceTag"/> collider within <see cref="maxRange"/>,
     /// red otherwise. Activate (trigger) raycasts from the barrel:
     /// on hit, dispatches to <see cref="GrappleLocomotion"/> to zip the
-    /// rig to the surface and self-destructs on arrival; on miss, plays a
-    /// brief red dry-fire flash.
+    /// rig to the surface; on miss, plays a brief red dry-fire flash.
+    /// On a successful arrival the gun is auto-swapped for an ice pick
+    /// from the belt (if one is stowed there) so the player can swing it
+    /// into the wall during the wall-hang. Climbing-anchor lifecycle is
+    /// owned by <see cref="GrappleLocomotion"/>.
     /// </summary>
     public class GrappleGun : MonoBehaviour, IHoldable, IActivatable
     {
@@ -40,10 +43,6 @@ namespace IcePEAK.Gadgets.Items
         [SerializeField] private UnityEngine.InputSystem.InputActionReference rightTriggerAction;
         [SerializeField] private float triggerThreshold = 0.5f;
 
-        [Header("Climbing")]
-        [Tooltip("ClimbingLocomotion on XR Origin — registers this gun as a climbing anchor after grapple arrival.")]
-        [SerializeField] private ClimbingLocomotion climbingLocomotion;
-
         [Header("Hint")]
         [SerializeField] private string displayName = "Grapple Gun";
 
@@ -52,8 +51,8 @@ namespace IcePEAK.Gadgets.Items
         private bool _isStowed = true;
         private bool _isZipping;
         private bool _isDryFiring;
-        private bool _isClimbing;
         private GrappleLocomotion _locomotion;
+        private GadgetBelt _belt;
         private Vector3 _zipAnchor;
         private UnityEngine.InputSystem.InputActionReference _activeTriggerAction;
 
@@ -70,13 +69,11 @@ namespace IcePEAK.Gadgets.Items
             {
                 if (laser != null) laser.enabled = false;
                 if (rope != null) rope.enabled = false;
-                ExitClimbing();
             }
         }
 
         private UnityEngine.InputSystem.InputActionReference ResolveHandTriggerAction()
         {
-            // Walk up the hierarchy to find "Left" or "Right" in a controller name
             for (var t = transform.parent; t != null; t = t.parent)
             {
                 var n = t.name;
@@ -85,7 +82,7 @@ namespace IcePEAK.Gadgets.Items
                 if (n.IndexOf("Right", System.StringComparison.OrdinalIgnoreCase) >= 0)
                     return rightTriggerAction;
             }
-            return rightTriggerAction; // fallback
+            return rightTriggerAction;
         }
 
         private void OnEnable()
@@ -98,16 +95,9 @@ namespace IcePEAK.Gadgets.Items
         {
             if (_isStowed) return;
 
-            // Cancel mid-zip if trigger released
+            // Cancel mid-zip if trigger released. OnZipComplete still fires.
             if (_isZipping && !TriggerHeld)
-            {
                 _locomotion?.CancelZip();
-                // OnArrival will still fire and handle cleanup
-            }
-
-            // Exit climbing mode if trigger released
-            if (_isClimbing && !TriggerHeld)
-                ExitClimbing();
         }
 
         public void Activate() => Fire();
@@ -130,13 +120,10 @@ namespace IcePEAK.Gadgets.Items
             {
                 _zipAnchor = hit.point;
 
-                if (!_locomotion.StartZip(_zipAnchor, barrelTip.position, OnArrival)) return;
+                if (!_locomotion.StartZip(_zipAnchor, barrelTip.position, transform,
+                                          OnZipArrivedAtWall, OnZipComplete)) return;
 
                 _isZipping = true;
-                // Hide the aim laser for the duration of the zip — Update()
-                // early-returns while zipping, so without this the laser stays
-                // frozen at its pre-fire positions (a stale line from the old
-                // barrel position to the anchor).
                 if (laser != null) laser.enabled = false;
                 if (rope != null)
                 {
@@ -152,12 +139,6 @@ namespace IcePEAK.Gadgets.Items
             }
         }
 
-        // All line-renderer updates run in LateUpdate so they see the final
-        // barrel pose for the frame. XR controller tracking and the climbing /
-        // grapple locomotion providers move the rig in Update, so setting
-        // world-space LineRenderer positions in Update leaves the line one
-        // frame behind — it shows up as a fixed offset between the nozzle and
-        // the laser origin whenever the rig is in motion.
         private void LateUpdate()
         {
             if (barrelTip == null) return;
@@ -217,26 +198,33 @@ namespace IcePEAK.Gadgets.Items
             _isDryFiring = false;
         }
 
-        private void OnArrival()
+        /// <summary>
+        /// Fires at the start of the arrival phase, before the wall-hang begins.
+        /// Auto-swaps this gun for an ice pick on the belt (Feature 4) so the
+        /// player has a pick in hand for the full hang window. No-op if no pick
+        /// is on the belt or no owning hand can be resolved.
+        /// </summary>
+        private void OnZipArrivedAtWall()
+        {
+            var hand = BeltSwap.FindOwningHand(transform);
+            if (hand == null) return;
+
+            if (_belt == null) _belt = FindAnyObjectByType<GadgetBelt>();
+            if (_belt == null) return;
+
+            var slot = BeltSwap.FindFirstSlotWithIcePick(_belt);
+            if (slot == null) return;
+
+            BeltSwap.Swap(hand, slot);
+        }
+
+        /// <summary>
+        /// Fires at the end of the zip lifecycle (whether arrival ran or not).
+        /// </summary>
+        private void OnZipComplete()
         {
             _isZipping = false;
             if (rope != null) rope.enabled = false;
-
-            // If trigger is still held on arrival, enter climbing mode
-            if (TriggerHeld)
-                EnterClimbing();
-        }
-
-        private void EnterClimbing()
-        {
-            _isClimbing = true;
-            climbingLocomotion?.SetGrappleAnchor(transform);
-        }
-
-        private void ExitClimbing()
-        {
-            _isClimbing = false;
-            climbingLocomotion?.SetGrappleAnchor(null);
         }
 
         private bool TryResolveLocomotion()
