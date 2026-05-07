@@ -43,10 +43,22 @@ namespace IcePEAK.Gadgets.Items
         [SerializeField] private UnityEngine.InputSystem.InputActionReference rightTriggerAction;
         [SerializeField] private float triggerThreshold = 0.5f;
 
+        [Header("Cooldown")]
+        [Tooltip("Seconds the gun is locked after a successful zip starts. Dry-fires do not start the cooldown.")]
+        [SerializeField] private float cooldownDuration = 3.0f;
+
         [Header("Hint")]
         [SerializeField] private string displayName = "Grapple Gun";
 
         public string DisplayName => displayName;
+
+        /// <summary>True while the gun is on cooldown and Fire() will be rejected.</summary>
+        public bool IsOnCooldown => Time.time < _cooldownEndTime;
+
+        /// <summary>0 = just fired, 1 = ready (or cooldownDuration ≤ 0). Drives the diegetic indicator.</summary>
+        public float CooldownProgress01 => cooldownDuration <= 0f
+            ? 1f
+            : Mathf.Clamp01(1f - (_cooldownEndTime - Time.time) / cooldownDuration);
 
         private bool _isStowed = true;
         private bool _isZipping;
@@ -54,6 +66,7 @@ namespace IcePEAK.Gadgets.Items
         private GrappleLocomotion _locomotion;
         private GadgetBelt _belt;
         private Vector3 _zipAnchor;
+        private float _cooldownEndTime;
         private UnityEngine.InputSystem.InputActionReference _activeTriggerAction;
 
         private bool TriggerHeld => (_activeTriggerAction?.action?.ReadValue<float>() ?? 0f) >= triggerThreshold;
@@ -104,7 +117,7 @@ namespace IcePEAK.Gadgets.Items
 
         public void Fire()
         {
-            if (_isStowed || _isZipping || _isDryFiring) return;
+            if (_isStowed || _isZipping || _isDryFiring || IsOnCooldown) return;
             if (barrelTip == null) return;
 
             if (!TryResolveLocomotion())
@@ -124,6 +137,7 @@ namespace IcePEAK.Gadgets.Items
                                           OnZipArrivedAtWall, OnZipComplete)) return;
 
                 _isZipping = true;
+                _cooldownEndTime = Time.time + cooldownDuration;
                 if (laser != null) laser.enabled = false;
                 if (rope != null)
                 {
