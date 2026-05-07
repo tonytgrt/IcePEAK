@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 98032534851233a4cb3425aafa7d3b22
+timeCreated: 1582963378
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Prefabs/PartyPoper Star.prefab
+  uploadId: 355907

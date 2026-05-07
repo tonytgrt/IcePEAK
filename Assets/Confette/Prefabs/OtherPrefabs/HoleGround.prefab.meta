@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 2c3b1cb21c548d94b80734be96f35b6a
+timeCreated: 1583055309
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Prefabs/OtherPrefabs/HoleGround.prefab
+  uploadId: 355907

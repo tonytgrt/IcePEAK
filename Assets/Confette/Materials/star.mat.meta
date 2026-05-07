@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 7c1bb38b7105e934aa70ba21067537cc
+timeCreated: 1542872915
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Materials/star.mat
+  uploadId: 355907

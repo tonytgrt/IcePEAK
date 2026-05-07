@@ -115,6 +115,16 @@ namespace IcePEAK.Player
         /// </summary>
         public void Respawn() => StartCoroutine(RespawnRoutine());
 
+        /// <summary>
+        /// Resets the active checkpoint back to the original spawn point then respawns.
+        /// Called by GameRestarter on B button press to restart the full run.
+        /// </summary>
+        public void Restart()
+        {
+            _currentSpawnPoint = spawnPoint;
+            StartCoroutine(RespawnRoutine());
+        }
+
         private IEnumerator RespawnRoutine()
         {
             if (_respawning) yield break;

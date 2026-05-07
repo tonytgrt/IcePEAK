@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 825af369680857c4daf85b088363f839
+timeCreated: 1583055007
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Prefabs/OtherPrefabs/StarFountainGround.prefab
+  uploadId: 355907

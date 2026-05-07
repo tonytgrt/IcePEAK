@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 8e6d9b1a5cab73147adb0256cf94e891
+timeCreated: 1583055365
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Prefabs/OtherPrefabs/GroundFlare.prefab
+  uploadId: 355907

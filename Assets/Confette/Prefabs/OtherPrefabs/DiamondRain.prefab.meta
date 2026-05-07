@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 42f543248280acb4c9df4fc261f7a43d
+timeCreated: 1583054691
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Prefabs/OtherPrefabs/DiamondRain.prefab
+  uploadId: 355907

@@ -134,7 +134,6 @@ public class RockHitDetector : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         if (_hasHit) return;
-        if (_rb != null && _rb.IsSleeping()) return;  // rock has settled — ignore
         if (!collision.gameObject.CompareTag("Player")) return;
         if (collision.relativeVelocity.magnitude < _minSpeed) return;
 

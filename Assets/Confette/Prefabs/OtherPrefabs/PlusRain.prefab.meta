@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 50bb62ee18dff47479dc9efe51e86b16
+timeCreated: 1583054696
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 154844
+  packageName: Confetti Celebration Pack - Party Popper Fireworks
+  packageVersion: 1.0
+  assetPath: Assets/Confette/Prefabs/OtherPrefabs/PlusRain.prefab
+  uploadId: 355907
