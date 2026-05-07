@@ -133,9 +133,22 @@ public class RockHitDetector : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        // Diagnostic logging — remove once respawn is confirmed working
+        Debug.Log($"[RockHitDetector] Hit '{collision.gameObject.name}' tag='{collision.gameObject.tag}' " +
+                  $"relSpeed={collision.relativeVelocity.magnitude:F2} minSpeed={_minSpeed} " +
+                  $"fallHandlerAssigned={_fallHandler != null}");
+
         if (_hasHit) return;
-        if (!collision.gameObject.CompareTag("Player")) return;
-        if (collision.relativeVelocity.magnitude < _minSpeed) return;
+        if (!collision.gameObject.CompareTag("Player"))
+        {
+            Debug.Log("[RockHitDetector] -> ignored: not tagged 'Player'");
+            return;
+        }
+        if (collision.relativeVelocity.magnitude < _minSpeed)
+        {
+            Debug.Log("[RockHitDetector] -> ignored: impact speed below threshold");
+            return;
+        }
 
         _hasHit = true;
 
@@ -148,9 +161,14 @@ public class RockHitDetector : MonoBehaviour
         SendHaptics();
 
         if (_fallHandler != null)
+        {
+            Debug.Log("[RockHitDetector] -> calling FallHandler.Respawn()");
             _fallHandler.Respawn();
+        }
         else
-            Debug.LogWarning("[RockHitDetector] No FallHandler assigned on FallingRockSpawner.");
+        {
+            Debug.LogWarning("[RockHitDetector] -> FallHandler is NULL on the spawner!");
+        }
 
         Destroy(gameObject);
     }
