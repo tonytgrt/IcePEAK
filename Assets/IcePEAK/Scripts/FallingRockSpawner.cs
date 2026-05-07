@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using IcePEAK.Player;
 
 /// <summary>
 /// Periodically spawns rock prefabs inside a box volume above the cliff.
-/// Each spawned rock automatically gets a RockHitDetector that sends the
-/// player back to the last Checkpoint on impact.
+/// Each spawned rock automatically gets a RockHitDetector that calls
+/// FallHandler.Respawn() on player impact — reusing the same black-screen
+/// blink and checkpoint logic used by the fall system.
 /// </summary>
 public class FallingRockSpawner : MonoBehaviour
 {
@@ -33,6 +35,8 @@ public class FallingRockSpawner : MonoBehaviour
     [Header("Hit Settings")]
     [Tooltip("Minimum impact speed (m/s) to trigger a respawn.")]
     [SerializeField] private float minImpactSpeed = 1f;
+    [Tooltip("FallHandler on XR Origin — reused for the respawn blink.")]
+    [SerializeField] private FallHandler fallHandler;
 
     [Header("Haptics")]
     [Range(0f, 1f)][SerializeField] private float hapticAmplitude = 0.8f;
@@ -41,8 +45,6 @@ public class FallingRockSpawner : MonoBehaviour
     [Header("On Hit")]
     [Tooltip("Optional VFX/SFX prefab spawned at the contact point.")]
     [SerializeField] private GameObject hitEffectPrefab;
-    [Tooltip("Where to respawn the player if no Checkpoint has been reached yet.")]
-    [SerializeField] private Transform spawnPoint;
 
     [Header("Gizmo")]
     [SerializeField] private Color gizmoColor = new Color(1f, 0.85f, 0.1f, 0.5f);
@@ -88,9 +90,8 @@ public class FallingRockSpawner : MonoBehaviour
             Random.Range(-horizontalJitter, horizontalJitter));
         rb.angularVelocity = Random.insideUnitSphere * 2f;
 
-        // RockHitDetector is a top-level class — AddComponent works correctly
         var detector = rock.AddComponent<RockHitDetector>();
-        detector.Init(minImpactSpeed, hapticAmplitude, hapticDuration, hitEffectPrefab, spawnPoint);
+        detector.Init(minImpactSpeed, hapticAmplitude, hapticDuration, hitEffectPrefab, fallHandler);
 
         Destroy(rock, rockLifetime);
     }
@@ -106,7 +107,8 @@ public class FallingRockSpawner : MonoBehaviour
 
 /// <summary>
 /// Added at runtime to each spawned rock by FallingRockSpawner.
-/// Detects collision with the player and triggers a checkpoint respawn.
+/// On player collision, delegates respawn entirely to FallHandler.Respawn()
+/// so checkpoint tracking, screen fade, and pick release are all handled consistently.
 /// Must be a top-level class — Unity cannot AddComponent on nested types.
 /// </summary>
 public class RockHitDetector : MonoBehaviour
@@ -115,21 +117,24 @@ public class RockHitDetector : MonoBehaviour
     private float _hapticAmp;
     private float _hapticDur;
     private GameObject _hitEffect;
-    private Transform _spawnPoint;
+    private FallHandler _fallHandler;
+    private Rigidbody _rb;
     private bool _hasHit;
 
-    public void Init(float minSpeed, float amp, float dur, GameObject effect, Transform spawnPoint)
+    public void Init(float minSpeed, float amp, float dur, GameObject effect, FallHandler fallHandler)
     {
-        _minSpeed   = minSpeed;
-        _hapticAmp  = amp;
-        _hapticDur  = dur;
-        _hitEffect  = effect;
-        _spawnPoint = spawnPoint;
+        _minSpeed    = minSpeed;
+        _hapticAmp   = amp;
+        _hapticDur   = dur;
+        _hitEffect   = effect;
+        _fallHandler = fallHandler;
+        _rb          = GetComponent<Rigidbody>();
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (_hasHit) return;
+        if (_rb != null && _rb.IsSleeping()) return;  // rock has settled — ignore
         if (!collision.gameObject.CompareTag("Player")) return;
         if (collision.relativeVelocity.magnitude < _minSpeed) return;
 
@@ -142,35 +147,13 @@ public class RockHitDetector : MonoBehaviour
         }
 
         SendHaptics();
-        RespawnPlayer(collision.transform);
-        Destroy(gameObject);
-    }
 
-    private void RespawnPlayer(Transform hitTransform)
-    {
-        Vector3 destination;
-        if (Checkpoint.HasCheckpoint)
-        {
-            destination = Checkpoint.LastPosition;
-        }
-        else if (_spawnPoint != null)
-        {
-            destination = _spawnPoint.position;
-        }
+        if (_fallHandler != null)
+            _fallHandler.Respawn();
         else
-        {
-            Debug.LogWarning("[RockHitDetector] No checkpoint and no spawn point assigned — respawn skipped.");
-            return;
-        }
+            Debug.LogWarning("[RockHitDetector] No FallHandler assigned on FallingRockSpawner.");
 
-        // Walk up to XR Origin root in case the collider is on a child object
-        Transform xrOrigin = hitTransform.root;
-
-        foreach (var pick in FindObjectsByType<IcePickController>(FindObjectsSortMode.None))
-            if (pick.IsEmbedded) pick.Release();
-
-        xrOrigin.position = destination;
-        Debug.Log($"[RockHitDetector] Player respawned at {destination}");
+        Destroy(gameObject);
     }
 
     private void SendHaptics()
