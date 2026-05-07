@@ -9761,6 +9761,7 @@ MonoBehaviour:
   iceRespawner: {fileID: 1914542356}
   grappleLocomotion: {fileID: 1028671024}
   droneController: {fileID: 1028671031}
+  gadgetBelt: {fileID: 1783648002}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8

@@ -26,6 +26,8 @@ namespace IcePEAK.Player
         [SerializeField] private IcePEAK.Gadgets.GrappleLocomotion grappleLocomotion;
         [Tooltip("Optional. If assigned, respawn is suppressed while drone peek is active.")]
         [SerializeField] private IcePEAK.Gadgets.DroneController droneController;
+        [Tooltip("Optional. If assigned, all belt slots are reset (consumables respawned, partial uses reset) on respawn.")]
+        [SerializeField] private IcePEAK.Gadgets.GadgetBelt gadgetBelt;
 
         [Header("Ground Detection")]
         [SerializeField] private LayerMask groundLayer;
@@ -138,6 +140,14 @@ namespace IcePEAK.Player
             TeleportToSpawn();
 
             if (iceRespawner != null) iceRespawner.RespawnAll();
+
+            if (gadgetBelt != null) gadgetBelt.ResetAllSlotsForRespawn();
+            // Reset uses on every existing grapple gun instance (handles guns
+            // currently in hand or on a belt slot that wasn't depleted).
+            foreach (var gun in FindObjectsByType<IcePEAK.Gadgets.Items.GrappleGun>(FindObjectsSortMode.None))
+            {
+                if (gun != null) gun.ResetUses();
+            }
 
             if (blackoutHoldSeconds > 0f)
                 yield return new WaitForSecondsRealtime(blackoutHoldSeconds);

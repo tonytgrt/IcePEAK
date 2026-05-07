@@ -109,6 +109,23 @@ namespace IcePEAK.Gadgets
             return item;
         }
 
+        /// <summary>
+        /// If this slot is currently empty AND has an <c>initialPrefab</c>
+        /// configured, instantiate a fresh copy. Used by <c>FallHandler</c> to
+        /// restore consumable items (e.g. the grapple gun) on player respawn.
+        /// </summary>
+        public void RespawnInitialIfEmpty()
+        {
+            if (HeldItem != null) return;
+            if (initialPrefab == null) return;
+
+            var inst = Instantiate(initialPrefab, transform);
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            HeldItem = inst;
+            RefreshHighlightTarget();
+        }
+
         public void SetHighlighted(bool on) => SetHighlighted(on, null);
 
         public void SetHighlighted(bool on, HandCell hoveringHand)

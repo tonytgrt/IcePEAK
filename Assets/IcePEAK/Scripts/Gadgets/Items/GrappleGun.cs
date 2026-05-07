@@ -54,6 +54,10 @@ namespace IcePEAK.Gadgets.Items
         [Tooltip("Seconds the gun is locked after a successful zip starts. Dry-fires do not start the cooldown.")]
         [SerializeField] private float cooldownDuration = 3.0f;
 
+        [Header("Uses")]
+        [Tooltip("Total successful fires per gun. The gun is destroyed after the zip completes if uses reach 0. Reset on player respawn.")]
+        [SerializeField] private int maxUses = 5;
+
         [Header("Hint")]
         [SerializeField] private string displayName = "Grapple Gun";
 
@@ -67,6 +71,19 @@ namespace IcePEAK.Gadgets.Items
             ? 1f
             : Mathf.Clamp01(1f - (_cooldownEndTime - Time.time) / cooldownDuration);
 
+        /// <summary>Successful fires remaining before this gun self-destructs after its next zip.</summary>
+        public int RemainingUses => _remainingUses;
+
+        /// <summary>Maximum fires per gun lifetime (Inspector tunable).</summary>
+        public int MaxUses => maxUses;
+
+        /// <summary>Reset ammo to <see cref="MaxUses"/>. Called by <c>FallHandler</c> on player respawn.</summary>
+        public void ResetUses()
+        {
+            _remainingUses = maxUses;
+            _pendingDestroy = false;
+        }
+
         private bool _isStowed = true;
         private bool _isZipping;
         private bool _isDryFiring;
@@ -74,10 +91,17 @@ namespace IcePEAK.Gadgets.Items
         private GadgetBelt _belt;
         private Vector3 _zipAnchor;
         private float _cooldownEndTime;
+        private int _remainingUses;
+        private bool _pendingDestroy;
         private UnityEngine.InputSystem.InputActionReference _activeTriggerAction;
         private HapticImpulsePlayer _activeHaptics;
 
         private bool TriggerHeld => (_activeTriggerAction?.action?.ReadValue<float>() ?? 0f) >= triggerThreshold;
+
+        private void Awake()
+        {
+            _remainingUses = maxUses;
+        }
 
         public void OnTransfer(CellKind from, CellKind to)
         {
@@ -132,7 +156,7 @@ namespace IcePEAK.Gadgets.Items
 
         public void Fire()
         {
-            if (_isStowed || _isZipping || _isDryFiring || IsOnCooldown) return;
+            if (_isStowed || _isZipping || _isDryFiring || IsOnCooldown || _remainingUses <= 0) return;
             if (barrelTip == null) return;
 
             if (!TryResolveLocomotion())
@@ -153,6 +177,8 @@ namespace IcePEAK.Gadgets.Items
 
                 _isZipping = true;
                 _cooldownEndTime = Time.time + cooldownDuration;
+                _remainingUses--;
+                if (_remainingUses <= 0) _pendingDestroy = true;
                 if (laser != null) laser.enabled = false;
                 if (rope != null)
                 {
@@ -264,6 +290,33 @@ namespace IcePEAK.Gadgets.Items
         {
             _isZipping = false;
             if (rope != null) rope.enabled = false;
+
+            if (_pendingDestroy)
+                DestroyAfterUse();
+        }
+
+        /// <summary>
+        /// Clears whichever cell currently holds this gun (Hand or BeltSlot)
+        /// and destroys the GameObject. Called from <see cref="OnZipComplete"/>
+        /// when the gun's last use fired.
+        /// </summary>
+        private void DestroyAfterUse()
+        {
+            // Walk parents looking for a cell holding this gun.
+            for (var t = transform.parent; t != null; t = t.parent)
+            {
+                if (t.TryGetComponent<HandCell>(out var hand) && hand.HeldItem == gameObject)
+                {
+                    hand.Take();
+                    break;
+                }
+                if (t.TryGetComponent<BeltSlot>(out var slot) && slot.HeldItem == gameObject)
+                {
+                    slot.Take();
+                    break;
+                }
+            }
+            Destroy(gameObject);
         }
 
         private bool TryResolveLocomotion()

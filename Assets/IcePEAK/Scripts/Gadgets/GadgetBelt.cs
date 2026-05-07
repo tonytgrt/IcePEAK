@@ -85,5 +85,19 @@ namespace IcePEAK.Gadgets
             }
             return nearest != null;
         }
+
+        /// <summary>
+        /// For each slot configured with an <c>initialPrefab</c>, if currently
+        /// empty, re-instantiate it. Called by <c>FallHandler</c> on player
+        /// respawn to restore consumable items destroyed during the run.
+        /// </summary>
+        public void ResetAllSlotsForRespawn()
+        {
+            if (slots == null) return;
+            foreach (var slot in slots)
+            {
+                if (slot != null) slot.RespawnInitialIfEmpty();
+            }
+        }
     }
 }
