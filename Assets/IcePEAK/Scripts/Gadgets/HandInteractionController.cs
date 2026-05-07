@@ -101,39 +101,20 @@ namespace IcePEAK.Gadgets
         }
 
         /// <summary>
-        /// Unified swap/stow/draw. Snapshot both cells, empty both, re-place into swapped cells.
-        /// Draw = handItem null. Stow = slotItem null. Swap = both non-null. No-op = both null.
+        /// Unified swap/stow/draw. Delegates to BeltSwap.Swap; preserves the
+        /// IFixedInSlot opt-out so slot-locked gadgets (e.g. the drone) can
+        /// claim grip-press for themselves.
         /// </summary>
         private void ResolveBeltAction(BeltSlot slot)
         {
-            var handItem = handCell.HeldItem;
             var slotItem = slot.HeldItem;
+            if (handCell.HeldItem == null && slotItem == null) return;
+            if (slotItem != null && slotItem.GetComponent<IFixedInSlot>() != null) return;
 
-            if (handItem == null && slotItem == null) return;
-
-            // Slot-locked gadgets (e.g. the drone) opt out of swap/draw/stow.
-            // Grip-press here is left unclaimed so DroneController can use it.
-            if (slotItem != null && slotItem.GetComponent<IFixedInSlot>() != null)
-                return;
-
-            handCell.Take();
-            slot.Take();
-
-            if (slotItem != null) PlaceInto(handCell, slotItem, CellKind.BeltSlot);
-            if (handItem != null) PlaceInto(slot,     handItem, CellKind.Hand);
+            BeltSwap.Swap(handCell, slot);
 
             // Held item vs placeholder may have changed — re-evaluate highlight target.
             slot.SetHighlighted(true, handCell);
-        }
-
-        private static void PlaceInto(ICell cell, GameObject item, CellKind from)
-        {
-            item.transform.SetParent(cell.Anchor, worldPositionStays: false);
-            item.transform.localPosition = Vector3.zero;
-            item.transform.localRotation = Quaternion.identity;
-            cell.Place(item);
-            var holdable = item.GetComponent<IHoldable>();
-            holdable?.OnTransfer(from, cell.Kind);
         }
     }
 }
