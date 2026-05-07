@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Haptics;
 
 namespace IcePEAK.Gadgets.Items
 {
@@ -43,6 +44,14 @@ namespace IcePEAK.Gadgets.Items
         [SerializeField] private UnityEngine.InputSystem.InputActionReference rightTriggerAction;
         [SerializeField] private float triggerThreshold = 0.5f;
 
+        [Header("Haptics")]
+        [Tooltip("HapticImpulsePlayer on the left controller — buzzes on left-hand dry-fire.")]
+        [SerializeField] private HapticImpulsePlayer leftHaptics;
+        [Tooltip("HapticImpulsePlayer on the right controller — buzzes on right-hand dry-fire.")]
+        [SerializeField] private HapticImpulsePlayer rightHaptics;
+        [SerializeField, Range(0f, 1f)] private float dryFireHapticAmplitude = 0.5f;
+        [SerializeField] private float dryFireHapticDuration = 0.1f;
+
         [Header("Cooldown")]
         [Tooltip("Seconds the gun is locked after a successful zip starts. Dry-fires do not start the cooldown.")]
         [SerializeField] private float cooldownDuration = 3.0f;
@@ -68,6 +77,7 @@ namespace IcePEAK.Gadgets.Items
         private Vector3 _zipAnchor;
         private float _cooldownEndTime;
         private UnityEngine.InputSystem.InputActionReference _activeTriggerAction;
+        private HapticImpulsePlayer _activeHaptics;
 
         private bool TriggerHeld => (_activeTriggerAction?.action?.ReadValue<float>() ?? 0f) >= triggerThreshold;
 
@@ -91,10 +101,18 @@ namespace IcePEAK.Gadgets.Items
             {
                 var n = t.name;
                 if (n.IndexOf("Left", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    // Prefer Inspector-assigned ref; fall back to the component on the controller.
+                    _activeHaptics = leftHaptics != null ? leftHaptics : t.GetComponent<HapticImpulsePlayer>();
                     return leftTriggerAction;
+                }
                 if (n.IndexOf("Right", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    _activeHaptics = rightHaptics != null ? rightHaptics : t.GetComponent<HapticImpulsePlayer>();
                     return rightTriggerAction;
+                }
             }
+            _activeHaptics = rightHaptics;
             return rightTriggerAction;
         }
 
@@ -203,6 +221,8 @@ namespace IcePEAK.Gadgets.Items
         private void StartDryFire()
         {
             StartCoroutine(DryFireFlash());
+            if (_activeHaptics != null && dryFireHapticAmplitude > 0f && dryFireHapticDuration > 0f)
+                _activeHaptics.SendHapticImpulse(dryFireHapticAmplitude, dryFireHapticDuration);
         }
 
         private IEnumerator DryFireFlash()
