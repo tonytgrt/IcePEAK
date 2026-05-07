@@ -35,7 +35,12 @@ namespace IcePEAK.Gadgets.Items
         {
             _mpb = new MaterialPropertyBlock();
             _fillID = Shader.PropertyToID(fillProperty);
-            if (fillRenderer != null) _baseScale = fillRenderer.transform.localScale;
+            if (fillRenderer == null)
+                Debug.LogWarning($"[GrappleCooldownIndicator] {name}: fillRenderer not wired — indicator will be inert.", this);
+            else
+                _baseScale = fillRenderer.transform.localScale;
+            if (gun == null)
+                Debug.LogWarning($"[GrappleCooldownIndicator] {name}: gun not wired — indicator will be inert.", this);
         }
 
         private void Update()
